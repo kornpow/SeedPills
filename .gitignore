@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+
+# Generated print files (large; regenerate with render_batches.py)
+*.3mf
+*.stl
