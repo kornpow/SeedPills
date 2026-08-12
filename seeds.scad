@@ -10,7 +10,8 @@
 //     until you snap them apart
 //
 // Single-sided by default: one word per pill, printed flat with no flip.
-// A full 2048-word set is 2048 pills (16 plates at 13x31 on a 256mm bed).
+// A full 2048-word set is 2048 pills (7 plates at 12x27 on a 256mm bed,
+// leaving room for the P1S exclusion corner).
 
 $fa = 6;    // smooth pill ends
 $fs = 0.8;  // curve resolution; smooth at this radius. The mesh is large but

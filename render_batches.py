@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
-"""Render SeedPills STL batches headlessly with the OpenSCAD CLI.
+"""Render SeedPills print plates headlessly with the OpenSCAD CLI.
 
 OpenSCAD alone is enough to design and export a grid interactively; this
-script is only for automation: rendering a full set of STL batches covering
-all 2048 BIP39 words (256 words per batch, 128 pills) in one go.
+script is only for automation: rendering a full set of plates covering all
+2048 BIP39 words in one go. By default each plate auto-fills a 256x256mm
+bed and exports as compressed 3MF.
 
 Usage:
-    python3 render_batches.py                 # all 8 batches, 8x16 grids
-    python3 render_batches.py --first 512 --count 1
-    python3 render_batches.py --columns 5 --rows 5 --out stl_files
+    python3 render_batches.py                    # all plates, 3MF, auto grid
+    python3 render_batches.py --double-sided     # 1024 pills instead of 2048
+    python3 render_batches.py --format stl       # STL instead of 3MF
+    python3 render_batches.py --first 324 --count 1
 
-Requires the `openscad` binary on PATH (or pass --openscad /path/to/openscad).
+Requires an `openscad` binary; on macOS the OpenSCAD app bundle is
+auto-detected (or pass --openscad /path/to/openscad).
 """
 
 import argparse
