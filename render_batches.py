@@ -61,9 +61,8 @@ def main():
     p.add_argument("--double-sided", action="store_true",
                    help="print word i+1024 on the back face of each pill")
     p.add_argument("--out", type=Path, default=Path("stl_files"))
-    p.add_argument("--format", choices=["3mf", "stl"], default="3mf",
-                   help="output format (default: 3mf, compressed = far smaller "
-                        "and easier on the slicer than a huge binary STL)")
+    p.add_argument("--format", choices=["stl", "3mf"], default="stl",
+                   help="part-file format (default: stl, universally supported)")
     p.add_argument("--scad", type=Path, default=Path(__file__).with_name("seeds.scad"))
     p.add_argument("--openscad", default=None,
                    help="path to the openscad binary (default: auto-detect)")
@@ -79,13 +78,15 @@ def main():
     except ValueError:
         sys.exit("error: --bed must be W,H in mm, e.g. 256,256")
 
-    # Default pill pitch: 18.5 + 0.5 across, 7.5 + 0.5 down, with a 4mm
-    # keep-out margin per side and the P1S 18x28mm front-left exclusion
+    # Default pill pitch: 18.5 + 0.4 across, 7.5 + 0.4 down, with a 4mm
+    # keep-out margin per side, the P1S 18x28mm front-left exclusion, and a
+    # 20mm-wide clear strip on the right for a 20x20mm prime tower
     # zone (matches seeds.scad). If the scad defaults change, pass
     # --columns/--rows explicitly.
-    margin, excl_w, excl_h = 4, 18, 28
-    columns = args.columns or int((bed_w - 2 * margin - excl_w + 0.5) // 19.0)
-    rows = args.rows or int((bed_h - 2 * margin - excl_h + 0.5) // 8.0)
+    margin, excl_w, excl_h, tower_w = 4, 18, 28, 20
+    columns = args.columns or int(
+        (bed_w - 2 * margin - excl_w - tower_w + 0.4) // 18.9)
+    rows = args.rows or int((bed_h - 2 * margin - excl_h + 0.4) // 7.9)
     words_per_pill = 2 if args.double_sided else 1
     per_batch = columns * rows * words_per_pill
 
@@ -102,19 +103,26 @@ def main():
     for batch in range(start_batch, stop):
         first = batch * per_batch
         last = min(first + per_batch, WORDS_TOTAL)
-        name = (f"SeedPills_{sides}_{columns}x{rows}_"
-                f"{first + 1:04d}_{last:04d}.{args.format}")
-        out = args.out / name
-        print(f"rendering {name} ...", flush=True)
-        cmd = [openscad, "-o", str(out),
-               "-D", f"first={first}",
-               "-D", f"columns={columns}",
-               "-D", f"rows={rows}",
-               "-D", f"double_sided={'true' if args.double_sided else 'false'}",
-               str(args.scad)]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            sys.exit(f"openscad failed:\n{result.stderr}")
+        stem = (f"SeedPills_{sides}_{columns}x{rows}_"
+                f"{first + 1:04d}_{last:04d}")
+        print(f"rendering {stem} base + text ...", flush=True)
+        defines = [
+            "-D", f"first={first}",
+            "-D", f"columns={columns}",
+            "-D", f"rows={rows}",
+            "-D", f"double_sided={'true' if args.double_sided else 'false'}",
+        ]
+
+        # Two ordinary files with identical coordinates are vendor-neutral.
+        # Import both simultaneously as parts of one object, then assign a
+        # different extruder/material to each part in the slicer.
+        for part in ("base", "text"):
+            out = args.out / f"{stem}_{part}.{args.format}"
+            cmd = [openscad, "-o", str(out), *defines,
+                   "-D", f'render_part="{part}"', str(args.scad)]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                sys.exit(f"openscad failed rendering {part}:\n{result.stderr}")
     print("done")
 
 
