@@ -30,9 +30,9 @@ all possible words. To generate a phrase:
    each word an equal chance.
 2. **Draw the entropy words.** Reach in blind (or let someone else draw) and
    pull out pills, one at a time, in order. Draw **11 words for a 12-word
-   phrase** or **23 words for a 24-word phrase**. Do not put a drawn pill back
-   into the deck until the phrase is complete—without replacement keeps the
-   selection uniform.
+   phrase** or **23 words for a 24-word phrase**. After each draw, **return
+   the pill to the deck and reshuffle** so that every draw is an independent,
+   uniform choice over all 2,048 words (with replacement).
 3. **Compute the checksum word.** The final word of a BIP39 phrase is a
    checksum, not entropy. Do **not** draw it from the pills. Enter the words
    you drew into a hardware wallet such as a SeedSigner (or any device that
