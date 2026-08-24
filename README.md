@@ -164,7 +164,7 @@ python3 render_batches.py --first 297 --count 1
 python3 render_batches.py --columns 8 --rows 16
 python3 render_batches.py --bed 256,256
 python3 render_batches.py --double-sided
-python3 render_batches.py --format 3mf        # paired standard 3MF files
+python3 render_batches.py --format 3mf        # multipart standard 3MF files
 python3 render_batches.py --out another_folder
 ```
 
@@ -174,8 +174,13 @@ Elsewhere, put `openscad` on `PATH` or pass `--openscad /path/to/openscad`.
 Output names follow this pattern:
 
 ```text
-SeedPills_<sides>_<columns>x<rows>_<first>-<last>_<part>.<format>
+SeedPills_<sides>_<columns>x<rows>_<first>-<last>_<part>.stl
+SeedPills_<sides>_<columns>x<rows>_<first>-<last>.3mf
 ```
+
+STL output uses matching base/text files because STL has no multipart
+container. Each 3MF contains both meshes as aligned components with their base
+and text colors, ready for filament assignment without manual positioning.
 
 ## Useful parameters
 
@@ -195,4 +200,11 @@ Edit these near the top of `seeds.scad`:
 | `text_weight` | Outward glyph expansion |
 
 The source of truth is [seeds.scad](seeds.scad). `render_batches.py` is only
-an automation helper; OpenSCAD remains sufficient for editing the model.
+an automation helper: it queries OpenSCAD for the effective grid before it
+renders any batches, so layout dimensions are never duplicated in Python.
+
+To verify that every pill still matches the canonical BIP39 English wordlist:
+
+```sh
+python3 test_words.py
+```

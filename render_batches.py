@@ -4,12 +4,12 @@
 OpenSCAD alone is enough to design and export a grid interactively; this
 script is only for automation: rendering a full set of plates covering all
 2048 BIP39 words in one go. By default each plate auto-fills a 256x256mm
-bed and exports as compressed 3MF.
+bed and exports paired STL files.
 
 Usage:
-    python3 render_batches.py                    # all plates, 3MF, auto grid
+    python3 render_batches.py                    # all plates, STL, auto grid
     python3 render_batches.py --double-sided     # 1024 pills instead of 2048
-    python3 render_batches.py --format stl       # STL instead of 3MF
+    python3 render_batches.py --format 3mf       # 3MF instead of STL
     python3 render_batches.py --first 324 --count 1
 
 Requires an `openscad` binary; on macOS the OpenSCAD app bundle is
@@ -17,11 +17,17 @@ auto-detected (or pass --openscad /path/to/openscad).
 """
 
 import argparse
+import math
 import platform
+import re
 import shutil
 import subprocess
 import sys
+import tempfile
+import zipfile
+from copy import deepcopy
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 WORDS_TOTAL = 2048
 
@@ -33,6 +39,12 @@ MACOS_APP_CANDIDATES = [
     Path.home() / "Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
 ]
 
+GRID_ECHO_RE = re.compile(r'ECHO:\s*"grid:\s*(\d+)\s*x\s*(\d+)\s*=')
+CORE_NS = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
+XML_NS = "http://www.w3.org/XML/1998/namespace"
+
+ET.register_namespace("", CORE_NS)
+
 
 def find_openscad():
     on_path = shutil.which("openscad")
@@ -43,6 +55,115 @@ def find_openscad():
             if candidate.exists():
                 return str(candidate)
     return None
+
+
+def read_grid(openscad, scad, bed_w, bed_h, columns, rows):
+    """Ask seeds.scad for its effective grid instead of duplicating its math."""
+    cmd = [
+        openscad,
+        "--export-format", "echo",
+        "-o", "-",
+        "-D", f"bed=[{bed_w},{bed_h}]",
+        "-D", f"columns={columns}",
+        "-D", f"rows={rows}",
+        str(scad),
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        sys.exit(f"openscad failed reading the grid:\n{result.stderr}")
+
+    matches = GRID_ECHO_RE.findall(result.stdout + "\n" + result.stderr)
+    if len(matches) != 1:
+        sys.exit("error: could not read exactly one grid echo from seeds.scad; "
+                 "expected 'grid: C x R = ...'")
+    return tuple(int(value) for value in matches[0])
+
+
+def read_3mf_part(path):
+    """Return a part's mesh and effective display color from an OpenSCAD 3MF."""
+    with zipfile.ZipFile(path) as package:
+        root = ET.fromstring(package.read("3D/3dmodel.model"))
+
+    obj = root.find(f"./{{{CORE_NS}}}resources/{{{CORE_NS}}}object")
+    if obj is None:
+        raise ValueError(f"{path} contains no 3MF object")
+    mesh = obj.find(f"{{{CORE_NS}}}mesh")
+    if mesh is None:
+        raise ValueError(f"{path} contains no 3MF mesh")
+
+    material_index = obj.get("pindex", "0")
+    triangles = mesh.findall(f".//{{{CORE_NS}}}triangle")
+    triangle_materials = {triangle.get("p1") for triangle in triangles
+                          if triangle.get("p1") is not None}
+    if len(triangle_materials) == 1:
+        material_index = triangle_materials.pop()
+    for triangle in triangles:
+        for attribute in ("pid", "p1", "p2", "p3"):
+            triangle.attrib.pop(attribute, None)
+
+    material_id = obj.get("pid")
+    group = root.find(
+        f"./{{{CORE_NS}}}resources/{{{CORE_NS}}}basematerials"
+        f"[@id='{material_id}']"
+    )
+    if group is None:
+        raise ValueError(f"{path} contains no matching base-material group")
+    materials = group.findall(f"{{{CORE_NS}}}base")
+    color = materials[int(material_index)].get("displaycolor")
+    return deepcopy(mesh), color
+
+
+def assemble_3mf(base_path, text_path, output_path, title):
+    """Package aligned base/text meshes as components of one 3MF object."""
+    base_mesh, base_color = read_3mf_part(base_path)
+    text_mesh, text_color = read_3mf_part(text_path)
+
+    model = ET.Element(f"{{{CORE_NS}}}model", {
+        "unit": "millimeter",
+        f"{{{XML_NS}}}lang": "en-US",
+    })
+    for name, value in (("Title", title),
+                        ("Application", "SeedPills render_batches.py")):
+        metadata = ET.SubElement(model, f"{{{CORE_NS}}}metadata", {"name": name})
+        metadata.text = value
+
+    resources = ET.SubElement(model, f"{{{CORE_NS}}}resources")
+    materials = ET.SubElement(resources, f"{{{CORE_NS}}}basematerials",
+                              {"id": "1"})
+    ET.SubElement(materials, f"{{{CORE_NS}}}base",
+                  {"name": "Base", "displaycolor": base_color})
+    ET.SubElement(materials, f"{{{CORE_NS}}}base",
+                  {"name": "Text", "displaycolor": text_color})
+
+    for object_id, name, material_index, mesh in (
+            ("2", "Base", "0", base_mesh),
+            ("3", "Text", "1", text_mesh)):
+        obj = ET.SubElement(resources, f"{{{CORE_NS}}}object", {
+            "id": object_id,
+            "name": name,
+            "type": "model",
+            "pid": "1",
+            "pindex": material_index,
+        })
+        obj.append(mesh)
+
+    assembly = ET.SubElement(resources, f"{{{CORE_NS}}}object", {
+        "id": "4", "name": title, "type": "model",
+    })
+    components = ET.SubElement(assembly, f"{{{CORE_NS}}}components")
+    ET.SubElement(components, f"{{{CORE_NS}}}component", {"objectid": "2"})
+    ET.SubElement(components, f"{{{CORE_NS}}}component", {"objectid": "3"})
+    build = ET.SubElement(model, f"{{{CORE_NS}}}build")
+    ET.SubElement(build, f"{{{CORE_NS}}}item", {"objectid": "4"})
+
+    with zipfile.ZipFile(base_path) as source:
+        content_types = source.read("[Content_Types].xml")
+        relationships = source.read("_rels/.rels")
+    model_xml = ET.tostring(model, encoding="utf-8", xml_declaration=True)
+    with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as package:
+        package.writestr("[Content_Types].xml", content_types)
+        package.writestr("_rels/.rels", relationships)
+        package.writestr("3D/3dmodel.model", model_xml)
 
 
 def main():
@@ -77,16 +198,11 @@ def main():
         bed_w, bed_h = (float(v) for v in args.bed.split(","))
     except ValueError:
         sys.exit("error: --bed must be W,H in mm, e.g. 256,256")
+    if not all(math.isfinite(v) and v > 0 for v in (bed_w, bed_h)):
+        sys.exit("error: --bed dimensions must be positive finite numbers")
 
-    # Default pill pitch: 18.5 + 0.4 across, 7.5 + 0.4 down, with a 4mm
-    # keep-out margin per side, the P1S 18x28mm front-left exclusion, and a
-    # 20mm-wide clear strip on the right for a 20x20mm prime tower
-    # zone (matches seeds.scad). If the scad defaults change, pass
-    # --columns/--rows explicitly.
-    margin, excl_w, excl_h, tower_w = 4, 18, 28, 20
-    columns = args.columns or int(
-        (bed_w - 2 * margin - excl_w - tower_w + 0.4) // 18.9)
-    rows = args.rows or int((bed_h - 2 * margin - excl_h + 0.4) // 7.9)
+    columns, rows = read_grid(openscad, args.scad, bed_w, bed_h,
+                              args.columns, args.rows)
     words_per_pill = 2 if args.double_sided else 1
     per_batch = columns * rows * words_per_pill
 
@@ -108,21 +224,30 @@ def main():
         print(f"rendering {stem} base + text ...", flush=True)
         defines = [
             "-D", f"first={first}",
+            "-D", f"bed=[{bed_w},{bed_h}]",
             "-D", f"columns={columns}",
             "-D", f"rows={rows}",
             "-D", f"double_sided={'true' if args.double_sided else 'false'}",
         ]
 
-        # Two ordinary files with identical coordinates are vendor-neutral.
-        # Import both simultaneously as parts of one object, then assign a
-        # different extruder/material to each part in the slicer.
-        for part in ("base", "text"):
-            out = args.out / f"{stem}_{part}.{args.format}"
+        def render_part(part, out):
             cmd = [openscad, "-o", str(out), *defines,
                    "-D", f'render_part="{part}"', str(args.scad)]
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
                 sys.exit(f"openscad failed rendering {part}:\n{result.stderr}")
+
+        if args.format == "3mf":
+            with tempfile.TemporaryDirectory(prefix="seedpills-") as temp_dir:
+                base = Path(temp_dir) / "base.3mf"
+                text = Path(temp_dir) / "text.3mf"
+                render_part("base", base)
+                render_part("text", text)
+                assemble_3mf(base, text, args.out / f"{stem}.3mf", stem)
+        else:
+            # STL has no multipart container, so retain two aligned files.
+            for part in ("base", "text"):
+                render_part(part, args.out / f"{stem}_{part}.stl")
     print("done")
 
 
