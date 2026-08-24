@@ -9,9 +9,54 @@ Each pill is a thin, standalone tile with bold raised text designed around a
 0.4 mm nozzle. The first four letters identify every BIP39 English word
 uniquely. Shorter words use all their letters.
 
+![Two-color detail: dark base with contrasting raised text](pictures/seedpills-twocolor-detail.png)
+
+The two-color split is what makes the letters pop: the base part prints in one
+filament and the raised text in another, so the word is legible without any
+painting or inking.
+
 > [!CAUTION]
 > Treat a selected seed phrase like a password. Do not photograph it, upload
 > it, or use an unverified selection process to secure real funds.
+
+## Drawing a seed phrase
+
+SeedPills are a physical, offline random word source. Each of the 2,048 BIP39
+English words is printed on exactly one pill, so the full set is a fair deck of
+all possible words. To generate a phrase:
+
+1. **Shuffle the deck.** Mix all 2,048 pills thoroughly—shake them in a bag,
+   box, or hat. Because every word appears exactly once, a good shuffle gives
+   each word an equal chance.
+2. **Draw words one at a time.** Reach in blind (or let someone else draw) and
+   pull out a pill. Read the word on it. That word is the next word of your
+   phrase.
+3. **Keep the order.** Write the words down in the order drawn. Do not put a
+   drawn pill back into the deck until the phrase is complete—without
+   replacement keeps the selection uniform.
+4. **Repeat for the phrase length.** Draw 12, 18, or 24 words for a standard
+   BIP39 phrase. The 2,048-pill deck is large enough that 24 draws without
+   replacement is a negligible fraction of the deck.
+5. **Record and verify.** Enter the words in order into your wallet or seed
+   tool. Because the pills only hold the first four letters of each word (or
+   the whole word when it is shorter), you still need the full BIP39 wordlist
+   to expand an abbreviation back to the canonical word—see "Why four
+   letters" below.
+
+> [!IMPORTANT]
+> The pills are an **input** to a seed phrase, not the secret itself. Anyone
+> who can see the drawn words in order can reconstruct your funds. Draw in
+> private, keep the written list secure, and never photograph or upload the
+> result.
+
+### Why four letters are enough
+
+The BIP39 English wordlist has the property that no two words share the same
+first four letters. That means a pill labelled `ABAN`, `ABST`, or `ABUS`
+unambiguously maps back to exactly one full word (`abandon`, `about`, `abuse`,
+…). For words shorter than four letters, the pill prints the entire word. So
+the compact pill text is lossless: you can always recover the exact BIP39 word
+from what is printed.
 
 ## Design highlights
 
