@@ -36,9 +36,11 @@ text_height = 0.4; // raised lettering: 2 layers; 2.0mm total height
 // Lettering
 double_sided = false;  // true = word i+1024 on the back face (halves the
                        // pill count but requires flipping / two-sided print)
-font = "Fredoka:style=Bold"; // thick strokes for a 0.4mm nozzle
-font_size = 4.2;             // large, but keeps wide words inside the pill
+font = "Space Mono:style=Bold"; // geometric monospace keeps codes distinct
+font_size = 4.2;             // source size before geometry-aware fitting
 text_weight = 0.12;          // outward offset fattens each glyph stroke
+text_box_width = [13.0, 15.2]; // fitted widths for 3- and 4-letter labels
+text_box_height = 4.6;         // fitted height; clears the rounded pill ends
 
 // Multi-color export
 render_part = "both";        // "both", "base", or "text"
@@ -95,6 +97,17 @@ module pill_shape() {
         pill_outline();
 }
 
+// Fit the actual expanded glyph outlines, rather than estimating from the
+// character count. This keeps wide combinations such as AWKW inside the
+// rounded pill while letting narrow words use the available face boldly.
+module fitted_text(label) {
+    target_width = len(label) <= 3 ? text_box_width[0] : text_box_width[1];
+    resize([target_width, text_box_height])
+        offset(r = text_weight)
+            text(label, size = font_size, font = font,
+                 halign = "center", valign = "center");
+}
+
 module pill(front_word, back_word, x, y) {
     // Face 0 is the top face; face 1 (only when double_sided) is the bottom
     // face, mirrored by rotating the pill 180 degrees.
@@ -115,10 +128,7 @@ module pill(front_word, back_word, x, y) {
                     rotate([0, 180 * side, 0])
                         translate([0, 0, height / 2 - 0.01])
                             linear_extrude(text_height + 0.01)
-                                offset(r = text_weight)
-                                    text(face_word[side],
-                                         size = font_size, font = font,
-                                         halign = "center", valign = "center");
+                                fitted_text(face_word[side]);
 
         // Optional interlocks: mid-height bars bridging the gap to the
         // previous pill. Standalone pills avoid the rough snapped edges.

@@ -68,7 +68,8 @@ from what is printed.
 - Vendor-neutral STL output; no slicer-specific project format required
 - Clean individual pills without breakaway-link scars
 - 2.0 mm total thickness: 1.6 mm base plus 0.4 mm raised text
-- Fredoka Bold lettering expanded by 0.12 mm for reliable 0.4 mm printing
+- Space Mono Bold lettering expanded by 0.12 mm and fitted from its glyph
+  outlines for large type that stays clear of the rounded pill edges
 - 0.4 mm gaps between pills—close together without shared geometry
 - Dedicated 20 mm strip for an approximately 20 × 20 mm prime tower
 - Automatic P1S/X1C bed layout with configurable dimensions
@@ -78,7 +79,7 @@ from what is printed.
 Requirements:
 
 - [OpenSCAD](https://openscad.org/)
-- [Fredoka](https://fonts.google.com/specimen/Fredoka), installed with the
+- [Space Mono](https://fonts.google.com/specimen/Space+Mono), installed with the
   Bold style
 - Python 3 only if you want to render batches automatically
 
@@ -198,6 +199,7 @@ Edit these near the top of `seeds.scad`:
 | `double_sided` | Put the upper 1,024 words on the reverse side |
 | `font`, `font_size` | Typeface and letter height |
 | `text_weight` | Outward glyph expansion |
+| `text_box_width`, `text_box_height` | Safe fitted lettering area |
 
 The source of truth is [seeds.scad](seeds.scad). `render_batches.py` is only
 an automation helper: it queries OpenSCAD for the effective grid before it
