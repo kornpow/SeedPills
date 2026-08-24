@@ -28,26 +28,30 @@ all possible words. To generate a phrase:
 1. **Shuffle the deck.** Mix all 2,048 pills thoroughly—shake them in a bag,
    box, or hat. Because every word appears exactly once, a good shuffle gives
    each word an equal chance.
-2. **Draw words one at a time.** Reach in blind (or let someone else draw) and
-   pull out a pill. Read the word on it. That word is the next word of your
-   phrase.
-3. **Keep the order.** Write the words down in the order drawn. Do not put a
-   drawn pill back into the deck until the phrase is complete—without
-   replacement keeps the selection uniform.
-4. **Repeat for the phrase length.** Draw 12, 18, or 24 words for a standard
-   BIP39 phrase. The 2,048-pill deck is large enough that 24 draws without
-   replacement is a negligible fraction of the deck.
-5. **Record and verify.** Enter the words in order into your wallet or seed
-   tool. Because the pills only hold the first four letters of each word (or
-   the whole word when it is shorter), you still need the full BIP39 wordlist
-   to expand an abbreviation back to the canonical word—see "Why four
-   letters" below.
+2. **Draw the entropy words.** Reach in blind (or let someone else draw) and
+   pull out pills, one at a time, in order. Draw **11 words for a 12-word
+   phrase** or **23 words for a 24-word phrase**. Do not put a drawn pill back
+   into the deck until the phrase is complete—without replacement keeps the
+   selection uniform.
+3. **Compute the checksum word.** The final word of a BIP39 phrase is a
+   checksum, not entropy. Do **not** draw it from the pills. Enter the words
+   you drew into a hardware wallet such as a SeedSigner (or any device that
+   builds BIP39 seeds offline) and let it append the correct checksum word.
+   Drawing a random 12th or 24th word would produce an invalid phrase that no
+   wallet will accept.
+4. **Record and verify.** Write down the full phrase, checksum word included,
+   in the order given. Because the pills only hold the first four letters of
+   each word (or the whole word when it is shorter), you still need the full
+   BIP39 wordlist to expand an abbreviation back to the canonical word—see
+   "Why four letters" below.
 
 > [!IMPORTANT]
-> The pills are an **input** to a seed phrase, not the secret itself. Anyone
-> who can see the drawn words in order can reconstruct your funds. Draw in
-> private, keep the written list secure, and never photograph or upload the
-> result.
+> The pills provide the **entropy** only. The checksum word is derived from
+> that entropy by a BIP39 implementation and must come from a trusted device
+> (e.g. a SeedSigner), never from the deck. The pills are also an **input** to
+> a seed phrase, not the secret itself: anyone who can see the drawn words in
+> order can reconstruct your funds. Draw in private, keep the written list
+> secure, and never photograph or upload the result.
 
 ### Why four letters are enough
 
