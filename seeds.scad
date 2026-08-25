@@ -2,9 +2,9 @@
 //
 // Defaults are tuned for a 0.4mm nozzle (Bambu P1S) at 0.2mm layers, with
 // every small feature an integer number of extrusion lines or layers:
-//   - total height   2.00mm = 10 x 0.2mm layers
+//   - total height   2.60mm = 13 x 0.2mm layers
 //   - base height    1.60mm =  8 x 0.2mm layers
-//   - raised text    0.40mm =  2 x 0.2mm layers
+//   - raised text    1.00mm =  5 x 0.2mm layers
 //   - standalone pills have a 0.40mm separation (one nozzle width)
 //
 // Single-sided by default: one word per pill, printed flat with no flip.
@@ -31,7 +31,7 @@ prime_tower = [20, 20]; // requested tower footprint; its width is reserved as
 width = 18.5;   // overall pill length
 lenght = 7.5;   // overall pill width
 height = 1.6;      // flat pill base: 8 layers at 0.2mm
-text_height = 0.4; // raised lettering: 2 layers; 2.0mm total height
+text_height = 1.0; // raised lettering: 5 layers; 2.6mm total height
 
 // Lettering
 double_sided = false;  // true = word i+1024 on the back face (halves the

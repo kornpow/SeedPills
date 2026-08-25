@@ -67,7 +67,7 @@ from what is printed.
 - Separate base and text meshes for two-color printing
 - Vendor-neutral STL output; no slicer-specific project format required
 - Clean individual pills without breakaway-link scars
-- 2.0 mm total thickness: 1.6 mm base plus 0.4 mm raised text
+- 2.6 mm total thickness: 1.6 mm base plus 1.0 mm raised text
 - Space Mono Bold lettering expanded by 0.12 mm and fitted from its glyph
   outlines for large type that stays clear of the rounded pill edges
 - 0.4 mm gaps between pills—close together without shared geometry
@@ -82,6 +82,27 @@ Requirements:
 - [Space Mono](https://fonts.google.com/specimen/Space+Mono), installed with the
   Bold style
 - Python 3 only if you want to render batches automatically
+
+### Font palette
+
+Space Mono Bold is the current production font. This palette compares it with
+other installed bold faces using the real pill dimensions, 0.12 mm glyph
+expansion, geometry-aware fitting, and 1.0 mm text extrusion. `WMWM` stresses
+the widest letter combination.
+
+![SeedPills font comparison palette](pictures/font-palette.png)
+
+| Font | Tradeoff |
+|---|---|
+| Space Mono Bold | Current choice; open, geometric, and reproducible |
+| PT Mono Bold | Compact and clear; an excellent alternate |
+| Menlo Bold | Crisp and compact, but primarily available on Apple systems |
+| SF Mono Heavy | Very thick strokes, but Apple-specific |
+| Courier New Bold | Widely available with a more traditional appearance |
+| Fredoka Bold | Rounded and highly printable, but not monospaced |
+
+For reproducible output on another machine, install the exact chosen font or
+change the `font` variable in `seeds.scad`.
 
 To inspect or export directly:
 
@@ -153,7 +174,7 @@ Recommended starting point for PLA or PETG:
 | Walls | 3 |
 | Supports | None |
 
-The base is eight 0.2 mm layers and the text is two more layers. If adhesion
+The base is eight 0.2 mm layers and the text is five more layers. If adhesion
 is marginal, use a small per-object brim. A shared brim can join neighboring
 pills and leave rough edges.
 
