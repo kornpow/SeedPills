@@ -68,7 +68,7 @@ from what is printed.
 - Vendor-neutral STL output; no slicer-specific project format required
 - Clean individual pills without breakaway-link scars
 - 2.6 mm total thickness: 1.6 mm base plus 1.0 mm raised text
-- Space Mono Bold lettering expanded by 0.12 mm and fitted from its glyph
+- PT Mono Bold lettering expanded by 0.12 mm and fitted from its glyph
   outlines for large type that stays clear of the rounded pill edges
 - 0.4 mm gaps between pills—close together without shared geometry
 - Dedicated 20 mm strip for an approximately 20 × 20 mm prime tower
@@ -79,13 +79,13 @@ from what is printed.
 Requirements:
 
 - [OpenSCAD](https://openscad.org/)
-- [Space Mono](https://fonts.google.com/specimen/Space+Mono), installed with the
+- [PT Mono](https://fonts.google.com/specimen/PT+Mono), installed with the
   Bold style
 - Python 3 only if you want to render batches automatically
 
 ### Font palette
 
-Space Mono Bold is the current production font. This palette compares it with
+PT Mono Bold is the current production font. This palette compares it with
 other installed bold faces using the real pill dimensions, 0.12 mm glyph
 expansion, geometry-aware fitting, and 1.0 mm text extrusion. `WMWM` stresses
 the widest letter combination.
@@ -94,8 +94,8 @@ the widest letter combination.
 
 | Font | Tradeoff |
 |---|---|
-| Space Mono Bold | Current choice; open, geometric, and reproducible |
-| PT Mono Bold | Compact and clear; an excellent alternate |
+| Space Mono Bold | Open, geometric, and heavier than PT Mono |
+| PT Mono Bold | Current choice; compact, clear, and monospaced |
 | Menlo Bold | Crisp and compact, but primarily available on Apple systems |
 | SF Mono Heavy | Very thick strokes, but Apple-specific |
 | Courier New Bold | Widely available with a more traditional appearance |

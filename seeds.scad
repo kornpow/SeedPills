@@ -36,7 +36,7 @@ text_height = 1.0; // raised lettering: 5 layers; 2.6mm total height
 // Lettering
 double_sided = false;  // true = word i+1024 on the back face (halves the
                        // pill count but requires flipping / two-sided print)
-font = "Space Mono:style=Bold"; // geometric monospace keeps codes distinct
+font = "PT Mono:style=Bold"; // compact monospace keeps codes distinct
 font_size = 4.2;             // source size before geometry-aware fitting
 text_weight = 0.12;          // outward offset fattens each glyph stroke
 text_box_width = [13.0, 15.2]; // fitted widths for 3- and 4-letter labels
