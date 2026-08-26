@@ -2,38 +2,54 @@
   "type": "process",
   "bottom_shell_layers": "4",
   "bottom_shell_thickness": "0",
+  "bridge_speed": [
+    "30",
+    "nil"
+  ],
   "brim_type": "no_brim",
   "brim_width": "0",
   "compatible_printers": [
     "Bambu Lab P1S 0.4 nozzle"
   ],
-  "description": "SeedPills two-color preset for a Bambu Lab P1S with a 0.4 mm nozzle. Uses solid thin bases, Arachne walls for PT Mono lettering, clean standalone edges, and a 20 mm prime tower.",
+  "default_acceleration": [
+    "3000",
+    "nil"
+  ],
+  "description": "Conservative SeedPills two-color preset for a Bambu Lab P1S with a 0.4 mm nozzle. Uses slower speeds and accelerations throughout, solid thin bases, Arachne walls for PT Mono lettering, clean standalone edges, and a 20 mm prime tower.",
   "elefant_foot_compensation": "0.15",
   "enable_prime_tower": "1",
   "enable_support": "0",
   "from": "User",
+  "gap_infill_speed": [
+    "50",
+    "nil"
+  ],
   "inherits": "0.20mm Standard @BBL X1C",
   "initial_layer_acceleration": [
     "500",
     "nil"
   ],
   "initial_layer_infill_speed": [
-    "60",
+    "30",
     "nil"
   ],
   "initial_layer_print_height": "0.2",
   "initial_layer_speed": [
-    "30",
+    "20",
     "nil"
   ],
   "inner_wall_line_width": "0.45",
+  "inner_wall_acceleration": [
+    "2000",
+    "nil"
+  ],
   "inner_wall_speed": [
-    "150",
+    "70",
     "nil"
   ],
   "internal_solid_infill_line_width": "0.45",
   "internal_solid_infill_speed": [
-    "120",
+    "70",
     "nil"
   ],
   "ironing_type": "no ironing",
@@ -42,25 +58,62 @@
   "name": "SeedPills 0.20mm @BBL P1S",
   "only_one_wall_top": "0",
   "outer_wall_line_width": "0.45",
+  "outer_wall_acceleration": [
+    "1200",
+    "nil"
+  ],
   "outer_wall_speed": [
-    "80",
+    "45",
+    "nil"
+  ],
+  "overhang_2_4_speed": [
+    "40",
+    "nil"
+  ],
+  "overhang_3_4_speed": [
+    "25",
+    "nil"
+  ],
+  "overhang_4_4_speed": [
+    "15",
     "nil"
   ],
   "prime_tower_brim_width": "0",
+  "prime_tower_max_speed": "50",
   "prime_tower_width": "20",
   "print_sequence": "by layer",
   "print_settings_id": "SeedPills 0.20mm @BBL P1S",
   "seam_position": "aligned",
   "small_perimeter_speed": [
-    "40",
+    "30",
+    "nil"
+  ],
+  "sparse_infill_acceleration": [
+    "2000",
     "nil"
   ],
   "sparse_infill_density": "15%",
+  "sparse_infill_speed": [
+    "70",
+    "nil"
+  ],
   "top_shell_layers": "4",
   "top_shell_thickness": "0",
   "top_surface_line_width": "0.42",
+  "top_surface_acceleration": [
+    "1000",
+    "nil"
+  ],
   "top_surface_speed": [
-    "80",
+    "45",
+    "nil"
+  ],
+  "travel_acceleration": [
+    "4000",
+    "nil"
+  ],
+  "travel_speed": [
+    "200",
     "nil"
   ],
   "version": "2.8.2.60",

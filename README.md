@@ -191,7 +191,9 @@ overrides the settings important to this model:
 - 0.20 mm layers and 0.45 mm walls
 - 3 Arachne wall loops for the compact PT Mono glyphs
 - 4 bottom plus 4 top shell layers, making the 1.6 mm base solid
-- Slower outer walls and top surfaces for clean letters
+- Conservative speeds throughout: 20 mm/s first layers, 45 mm/s outer/top
+  surfaces, 70 mm/s inner/solid/infill moves, and 200 mm/s travel
+- Reduced print and travel accelerations for steadier small-feature motion
 - 0.15 mm elephant-foot compensation to preserve the 0.4 mm pill gaps
 - Supports, ironing, and brims disabled
 - A 20 mm prime tower with no added brim, matching the reserved right strip
