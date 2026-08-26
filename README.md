@@ -178,6 +178,29 @@ The base is eight 0.2 mm layers and the text is five more layers. If adhesion
 is marginal, use a small per-object brim. A shared brim can join neighboring
 pills and leave rough edges.
 
+### Bambu Studio preset
+
+An importable P1S/0.4 mm process preset is included at
+[`presets/SeedPills 0.20mm @BBL P1S.json`](presets/SeedPills%200.20mm%20@BBL%20P1S.json).
+In Bambu Studio, use **File → Import → Import Configs**, select the JSON file,
+then choose **SeedPills 0.20mm @BBL P1S** as the process preset.
+
+The preset inherits Bambu's P1S-compatible 0.20 mm standard profile and
+overrides the settings important to this model:
+
+- 0.20 mm layers and 0.45 mm walls
+- 3 Arachne wall loops for the compact PT Mono glyphs
+- 4 bottom plus 4 top shell layers, making the 1.6 mm base solid
+- Slower outer walls and top surfaces for clean letters
+- 0.15 mm elephant-foot compensation to preserve the 0.4 mm pill gaps
+- Supports, ironing, and brims disabled
+- A 20 mm prime tower with no added brim, matching the reserved right strip
+
+After importing the paired STLs, assign the base and text parts to their AMS
+filaments and move the prime tower into the clear strip. Always inspect the
+sliced preview before printing, especially the first-layer separation and
+prime-tower clearance.
+
 ## Batch-rendering options
 
 ```sh
