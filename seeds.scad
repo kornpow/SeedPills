@@ -108,8 +108,7 @@ module plate_id_outline() {
                 circle(r = plate_id_size[1] / 2);
 }
 
-// A separate two-color tile identifies the source plate after printing. It
-// occupies the bottom of the prime-tower strip; the tower remains at the top.
+// A separate two-color tile identifies the source plate after printing.
 module plate_id() {
     label = str("P", plate_number, "/", plate_count);
     if (render_part == "both" || render_part == "base")
@@ -188,8 +187,9 @@ for (i = [0:cols * rws - 1]) {
 }
 
 if (show_plate_id)
-    translate([bed[0] / 2 - bed_margin - prime_tower[0] / 2,
-               -bed[1] / 2 + bed_margin + plate_id_size[1] / 2,
+    translate([origin[0] + (cols - 1) * (width + spacing),
+               origin[1] - (rws - 1) * (lenght + spacing)
+                   - lenght / 2 - spacing - plate_id_size[1] / 2,
                0])
         plate_id();
 
