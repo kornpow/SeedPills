@@ -201,6 +201,8 @@ overrides the settings important to this model:
 - 0.15 mm elephant-foot compensation to preserve the 0.4 mm pill gaps
 - Supports, ironing, and brims disabled
 - A 20 mm prime tower with no added brim, matching the reserved right strip
+- Sparse prime-tower layers enabled, avoiding Bambu's relative-position
+  restriction on this nearly full-bed layout
 
 After importing the paired STLs, assign the base and text parts to their AMS
 filaments and move the prime tower into the clear strip. Always inspect the
