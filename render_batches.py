@@ -224,6 +224,8 @@ def main():
         print(f"rendering {stem} base + text ...", flush=True)
         defines = [
             "-D", f"first={first}",
+            "-D", f"plate_number={batch + 1}",
+            "-D", f"plate_count={total_batches}",
             "-D", f"bed=[{bed_w},{bed_h}]",
             "-D", f"columns={columns}",
             "-D", f"rows={rows}",

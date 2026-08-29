@@ -26,6 +26,10 @@ exclusion = [18, 28];  // P1S/X1 front-left corner reserved for the filament
                        // cutter + wiper; the grid is shifted clear of it
 prime_tower = [20, 20]; // requested tower footprint; its width is reserved as
                         // a clear strip along the right edge of the plate
+show_plate_id = true;   // add a standalone P1/7-style plate marker
+plate_number = 1;       // set automatically by render_batches.py
+plate_count = 7;
+plate_id_size = [18, 10];
 
 // Pill
 width = 18.5;   // overall pill length
@@ -97,6 +101,31 @@ module pill_shape() {
         pill_outline();
 }
 
+module plate_id_outline() {
+    hull()
+        for (end = [-1, 1])
+            translate([end * (plate_id_size[0] - plate_id_size[1]) / 2, 0])
+                circle(r = plate_id_size[1] / 2);
+}
+
+// A separate two-color tile identifies the source plate after printing. It
+// occupies the bottom of the prime-tower strip; the tower remains at the top.
+module plate_id() {
+    label = str("P", plate_number, "/", plate_count);
+    if (render_part == "both" || render_part == "base")
+        color(base_color)
+            linear_extrude(height, center = true)
+                plate_id_outline();
+    if (render_part == "both" || render_part == "text")
+        color(text_color)
+            translate([0, 0, height / 2 - 0.01])
+                linear_extrude(text_height + 0.01)
+                    resize([15, 5.2])
+                        offset(r = text_weight)
+                            text(label, size = font_size, font = font,
+                                 halign = "center", valign = "center");
+}
+
 // Fit the actual expanded glyph outlines, rather than estimating from the
 // character count. This keeps wide combinations such as AWKW inside the
 // rounded pill while letting narrow words use the available face boldly.
@@ -157,6 +186,12 @@ for (i = [0:cols * rws - 1]) {
                origin[1] - y * (lenght + spacing), 0])
         pill(front, back, x, y);
 }
+
+if (show_plate_id)
+    translate([bed[0] / 2 - bed_margin - prime_tower[0] / 2,
+               -bed[1] / 2 + bed_margin + plate_id_size[1] / 2,
+               0])
+        plate_id();
 
 // Optional non-printing-scene helpers used to render README images.
 if (show_build_plate)

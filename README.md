@@ -72,6 +72,7 @@ from what is printed.
   outlines for large type that stays clear of the rounded pill edges
 - 0.4 mm gaps between pills—close together without shared geometry
 - Dedicated 20 mm strip for an approximately 20 × 20 mm prime tower
+- Automatic two-color `P1/7` through `P7/7` plate-identification tiles
 - Automatic P1S/X1C bed layout with configurable dimensions
 
 ## Quick start
@@ -160,7 +161,10 @@ on the last plate are left blank.
 
 The `prime_tower` setting is `[20, 20]`. The current rectangular grid reserves
 its 20 mm width as a full-height strip, which is conservative and lets the
-slicer place the tower anywhere along that edge.
+slicer place the tower along that edge. The prime tower sits at the top of the
+strip, while a small standalone plate-ID tile sits at the bottom. The batch
+renderer numbers that tile automatically (`P1/7`, `P2/7`, and so on), making
+it easy to keep pills associated with their source plate.
 
 ## Print settings
 
@@ -239,6 +243,8 @@ Edit these near the top of `seeds.scad`:
 | `columns`, `rows` | Grid dimensions; `0` enables automatic sizing |
 | `bed` | Build-plate width and depth in millimeters |
 | `prime_tower` | Requested tower footprint in millimeters |
+| `show_plate_id` | Include the standalone plate-number tile |
+| `plate_number`, `plate_count` | Plate label values; batch rendering sets them |
 | `spacing` | Gap between neighboring pills |
 | `render_part` | `"both"`, `"base"`, or `"text"` |
 | `connected` | Add optional breakaway links |
