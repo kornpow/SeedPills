@@ -8,6 +8,7 @@ bed and exports paired STL files.
 
 Usage:
     python3 render_batches.py                    # all plates, STL, auto grid
+    python3 render_batches.py --open-bambu 5     # regenerate all, open P5/7
     python3 render_batches.py --double-sided     # 1024 pills instead of 2048
     python3 render_batches.py --format 3mf       # 3MF instead of STL
     python3 render_batches.py --first 324 --count 1
@@ -187,7 +188,20 @@ def main():
     p.add_argument("--scad", type=Path, default=Path(__file__).with_name("seeds.scad"))
     p.add_argument("--openscad", default=None,
                    help="path to the openscad binary (default: auto-detect)")
+    p.add_argument("--open-bambu", type=int, metavar="PLATE",
+                   help="render every plate to a temporary folder, then open "
+                        "this 1-based plate in Bambu Studio with the repo preset")
     args = p.parse_args()
+
+    if args.open_bambu is not None:
+        if platform.system() != "Darwin":
+            sys.exit("error: --open-bambu currently requires macOS")
+        if args.first != 0 or args.count != 0:
+            sys.exit("error: --open-bambu always regenerates all plates; "
+                     "do not combine it with --first or --count")
+        if args.format != "stl":
+            sys.exit("error: --open-bambu uses the vendor-neutral STL pair")
+        args.out = Path(tempfile.mkdtemp(prefix="seedpills-bambu-"))
 
     openscad = args.openscad or find_openscad()
     if not openscad:
@@ -209,6 +223,9 @@ def main():
     # The word list does not have to divide evenly: the last plate simply
     # renders its unused slots blank (handled in seeds.scad).
     total_batches = -(-WORDS_TOTAL // per_batch)  # ceil
+    if args.open_bambu is not None \
+            and not 1 <= args.open_bambu <= total_batches:
+        sys.exit(f"error: --open-bambu plate must be 1..{total_batches}")
     start_batch = args.first // per_batch
     stop = total_batches if args.count == 0 else start_batch + args.count
 
@@ -216,11 +233,13 @@ def main():
     print(f"grid: {columns}x{rows} = {columns * rows} pills/plate, "
           f"{total_batches} plates for {WORDS_TOTAL} words", flush=True)
     args.out.mkdir(exist_ok=True)
+    rendered_stems = {}
     for batch in range(start_batch, stop):
         first = batch * per_batch
         last = min(first + per_batch, WORDS_TOTAL)
         stem = (f"SeedPills_{sides}_{columns}x{rows}_"
                 f"{first + 1:04d}_{last:04d}")
+        rendered_stems[batch + 1] = stem
         print(f"rendering {stem} base + text ...", flush=True)
         defines = [
             "-D", f"first={first}",
@@ -251,6 +270,18 @@ def main():
             for part in ("base", "text"):
                 render_part(part, args.out / f"{stem}_{part}.stl")
     print("done")
+
+    if args.open_bambu is not None:
+        preset = Path(__file__).with_name("presets") \
+            / "SeedPills 0.20mm @BBL P1S.json"
+        stem = rendered_stems[args.open_bambu]
+        base = (args.out / f"{stem}_base.stl").resolve()
+        text = (args.out / f"{stem}_text.stl").resolve()
+        print(f"opening P{args.open_bambu}/{total_batches} from {args.out}")
+        subprocess.Popen([
+            "open", "-a", "BambuStudio", "--args",
+            "--load-settings", str(preset.resolve()), str(base), str(text),
+        ], cwd=args.out)
 
 
 if __name__ == "__main__":

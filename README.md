@@ -125,6 +125,17 @@ python3 render_batches.py
 This produces seven matching base/text pairs in `stl_files/`. Generated STL
 and 3MF files are ignored by Git and are never intended to be committed.
 
+On macOS, the preferred print-preparation command regenerates **all seven
+plates** in a fresh temporary folder and opens the requested plate in Bambu
+Studio together with the version-matched repo preset:
+
+```sh
+python3 render_batches.py --open-bambu 5
+```
+
+That example opens `P5/7`, the next plate after `P6/7` and `P7/7`. The files
+remain outside the repository and can be discarded after slicing.
+
 ## Two-color slicer workflow
 
 For each plate, select the matching `_base.stl` and `_text.stl` files and
@@ -254,6 +265,7 @@ closely spaced pills and recreate the rough edges this design avoids.
 ```sh
 python3 render_batches.py                     # all plates, paired STLs
 python3 render_batches.py --first 297 --count 1
+python3 render_batches.py --open-bambu 5          # regenerate all; open P5/7
 python3 render_batches.py --columns 8 --rows 16
 python3 render_batches.py --bed 256,256
 python3 render_batches.py --double-sided
