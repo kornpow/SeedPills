@@ -5,13 +5,11 @@
 Create a printable set of 2,048 BIP39 word tiles for seed-phrase games,
 demonstrations, and offline random selection.
 
-![Close-up of two-color SeedPills with bold raised lettering](pictures/seedpills-closeup.png)
+![Printed black SeedPills with thick orange PT Mono lettering and textured backs](pictures/seedpills-header.jpg)
 
 Each pill is a thin, standalone tile with bold raised text designed around a
 0.4 mm nozzle. The first four letters identify every BIP39 English word
 uniquely. Shorter words use all their letters.
-
-![Two-color detail: dark base with contrasting raised text](pictures/seedpills-twocolor-detail.png)
 
 The two-color split is what makes the letters pop: the base part prints in one
 filament and the raised text in another, so the word is legible without any
@@ -73,7 +71,7 @@ from what is printed.
 - PT Mono Bold lettering expanded by 0.12 mm and fitted from its glyph
   outlines for large type that stays clear of the rounded pill edges
 - 0.4 mm gaps between pills—close together without shared geometry
-- Dedicated 20 mm strip for an approximately 20 × 20 mm prime tower
+- Dedicated lower-band space for an approximately 20 × 20 mm prime tower
 - Automatic two-color `P1/8` through `P8/8` plate-identification tiles
 - Automatic P1S/X1C bed layout with configurable dimensions
 
@@ -185,7 +183,7 @@ SeedPills_single_13x22_0001_0286_text.stl
 
 ## Default plate layout
 
-![Full SeedPills plate with the prime-tower keep-out highlighted](pictures/seedpills-plate.png)
+![Current 13 × 22 SeedPills plate with its plate marker and sliced prime tower](pictures/bambu-p1-8-sliced.jpg)
 
 The defaults target a 256 × 256 mm Bambu P1S/X1C build plate:
 
@@ -196,18 +194,16 @@ The defaults target a 256 × 256 mm Bambu P1S/X1C build plate:
 | Pill gap | 0.4 mm | One nozzle width, with no shared geometry |
 | Bed margin | 4 mm | Clearance for skirt or brim |
 | Front-left exclusion | 18 × 28 mm | Cutter/wiper clearance |
-| Prime-tower reserve | 20 mm wide | Clear strip at the right edge |
+| Prime-tower reserve | 20 × 20 mm | Open lower-right band below the grid |
 
 The complete 2,048-word single-sided set occupies eight plates. Unused slots
 on the last plate are left blank.
 
-The `prime_tower` setting is `[20, 20]`. The current rectangular grid reserves
-its 20 mm width as a full-height strip, which is conservative and lets the
-slicer place the tower along that edge. A small standalone plate-ID tile sits
+The `prime_tower` setting is `[20, 20]`. The wide, short grid leaves an open
+lower band for the tower and a small standalone plate-ID tile. The tile sits
 directly below the grid's bottom-right pill with the same 0.4 mm clearance as
-the pills. The wide, short grid leaves a lower band for that tile and the prime
-tower. The batch renderer numbers the tile automatically (`P1/8`, `P2/8`, and
-so on), making it easy to keep pills associated with their source plate.
+the pills. The batch renderer numbers it automatically (`P1/8`, `P2/8`, and so
+on), making it easy to keep pills associated with their source plate.
 
 ## Print settings
 
@@ -245,7 +241,7 @@ overrides the settings important to this model:
 - Reduced print and travel accelerations for steadier small-feature motion
 - 0.15 mm elephant-foot compensation to preserve the 0.4 mm pill gaps
 - Supports, ironing, and brims disabled
-- A 20 mm prime tower with no added brim, matching the reserved right strip
+- A 20 mm prime tower with no added brim, fitting the open lower-right band
 - Prime-tower position fixed at X=210, Y=4 in the open lower-right band
 - Sparse prime-tower layers enabled, avoiding Bambu's relative-position
   restriction on this nearly full-bed layout
@@ -260,10 +256,9 @@ bed, filament type, or tower dimensions.
 
 ## Real print results and troubleshooting
 
-![Printed SeedPills showing raised lettering and textured build-plate backs](pictures/printed-pill-detail.jpg)
-
-The raised PT Mono lettering remains readable at the small tile size, and the
-textured plate finish transfers cleanly to the flat backs.
+The successful pills shown in the header demonstrate that the raised PT Mono
+lettering remains readable at the small tile size and that the textured plate
+finish transfers cleanly to the flat backs.
 
 ### Localized adhesion failure
 

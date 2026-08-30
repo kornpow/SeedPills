@@ -24,8 +24,8 @@ bed = [256, 256];    // build plate size (P1S/X1C = 256x256), used when
 bed_margin = 4;        // keep-out per side, room for skirt/brim
 exclusion = [18, 28];  // P1S/X1 front-left corner reserved for the filament
                        // cutter + wiper; the grid is shifted clear of it
-prime_tower = [20, 20]; // requested tower footprint; its width is reserved as
-                        // a clear strip along the right edge of the plate
+prime_tower = [20, 20]; // requested tower footprint; the wide grid leaves
+                        // space for it in the open lower band
 show_plate_id = true;   // add a standalone P1/7-style plate marker
 plate_number = 1;       // set automatically by render_batches.py
 plate_count = 8;
