@@ -18,6 +18,7 @@ auto-detected (or pass --openscad /path/to/openscad).
 """
 
 import argparse
+import json
 import math
 import platform
 import re
@@ -274,14 +275,48 @@ def main():
     if args.open_bambu is not None:
         preset = Path(__file__).with_name("presets") \
             / "SeedPills 0.20mm @BBL P1S.json"
+        filament = Path(
+            "/Applications/BambuStudio.app/Contents/Resources/profiles/BBL/"
+            "filament/Bambu PLA Basic @BBL P1S 0.4 nozzle.json"
+        )
+        if not filament.exists():
+            sys.exit(f"error: Bambu PLA profile not found: {filament}")
+        filament_template = json.loads(filament.read_text())
+        colored_filaments = []
+        for slot, color_name, color_value in (
+                (1, "Black", "#000000"),
+                (2, "Orange", "#F97316")):
+            colored = dict(filament_template)
+            colored["name"] = f"SeedPills {color_name} PLA"
+            colored["from"] = "User"
+            colored["default_filament_colour"] = [color_value]
+            colored["filament_settings_id"] = [colored["name"]]
+            colored_path = args.out / f"filament-{slot}-{color_name.lower()}.json"
+            colored_path.write_text(json.dumps(colored, indent=2) + "\n")
+            colored_filaments.append(colored_path.resolve())
         stem = rendered_stems[args.open_bambu]
         base = (args.out / f"{stem}_base.stl").resolve()
         text = (args.out / f"{stem}_text.stl").resolve()
         print(f"opening P{args.open_bambu}/{total_batches} from {args.out}")
-        subprocess.Popen([
-            "open", "-a", "BambuStudio", "--args",
-            "--load-settings", str(preset.resolve()), str(base), str(text),
-        ], cwd=args.out)
+        print("filament 1: black base; filament 2: orange text")
+        launch_log = (args.out / "bambu-launch.log").open("w")
+        subprocess.Popen(
+            [
+                "/Applications/BambuStudio.app/Contents/MacOS/BambuStudio",
+                "--load-settings", str(preset.resolve()),
+                "--load-filaments", ";".join(map(str, colored_filaments)),
+                "--load-filament-ids", "1,2",
+                "--allow-multicolor-oneplate",
+                "--assemble", "--arrange", "1",
+                str(base), str(text),
+            ],
+            cwd=args.out,
+            stdin=subprocess.DEVNULL,
+            stdout=launch_log,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+        launch_log.close()
 
 
 if __name__ == "__main__":

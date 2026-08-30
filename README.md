@@ -1,6 +1,6 @@
 # SeedPills
 
-**Current version: `0.2.0-beta.1`**
+**Current version: `0.2.0-beta.3`**
 
 Create a printable set of 2,048 BIP39 word tiles for seed-phrase games,
 demonstrations, and offline random selection.
@@ -134,7 +134,10 @@ python3 render_batches.py --open-bambu 5
 ```
 
 That example opens `P5/7`, the next plate after `P6/7` and `P7/7`. The files
-remain outside the repository and can be discarded after slicing.
+remain outside the repository and can be discarded after slicing. The launch
+also assembles both STLs as one aligned multicolor object and assigns filament
+1 (black) to the base and filament 2 (orange) to the raised text. Bambu Studio
+then arranges the assembled object around the printer's exclusion zones.
 
 ## Two-color slicer workflow
 
@@ -202,7 +205,7 @@ pills and leave rough edges.
 An importable P1S/0.4 mm process preset is included at
 [`presets/SeedPills 0.20mm @BBL P1S.json`](presets/SeedPills%200.20mm%20@BBL%20P1S.json).
 In Bambu Studio, use **File → Import → Import Configs**, select the JSON file,
-then choose **SeedPills 0.2.0-beta.1 — 0.20mm @BBL P1S** as the process preset.
+then choose **SeedPills 0.2.0-beta.3 — 0.20mm @BBL P1S** as the process preset.
 The version in that visible profile name should match the version shown at the
 top of this README and in [`VERSION`](VERSION).
 
@@ -218,17 +221,17 @@ overrides the settings important to this model:
 - 0.15 mm elephant-foot compensation to preserve the 0.4 mm pill gaps
 - Supports, ironing, and brims disabled
 - A 20 mm prime tower with no added brim, matching the reserved right strip
-- Prime-tower position fixed at X=232, Y=232 (the top-right corner)
+- Prime-tower position fixed at X=210, Y=4 in the open lower-right band
 - Sparse prime-tower layers enabled, avoiding Bambu's relative-position
   restriction on this nearly full-bed layout
 
-After importing the paired STLs together as one multipart object, leave the
-object at Bambu Studio's automatic centered position, assign the base and text
-parts to their AMS filaments, and select this preset. The plate ID biases the
-combined bounding box so the pill grid lands left of the preset's tower
-position. No manual model or tower movement should be needed. Always inspect
-the sliced preview before printing, especially after changing printer, bed, or
-tower dimensions.
+The `--open-bambu` workflow imports the paired STLs as one multipart object,
+assigns the base to filament 1 (black) and text to filament 2 (orange), and
+loads this preset. Bambu Studio automatically arranges the assembled object
+around the P1S exclusion zones while retaining the base/text alignment. No
+manual model, color assignment, or tower movement should be needed. Always
+inspect the sliced preview before printing, especially after changing printer,
+bed, filament type, or tower dimensions.
 
 ## Real print results and troubleshooting
 

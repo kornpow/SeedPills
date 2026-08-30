@@ -48,8 +48,8 @@ text_box_height = 4.6;         // fitted height; clears the rounded pill ends
 
 // Multi-color export
 render_part = "both";        // "both", "base", or "text"
-base_color = "#F9D72C";     // preview colors; exports use separate part files
-text_color = "#202020";
+base_color = "#202020";     // filament 1: black base
+text_color = "#F97316";     // filament 2: orange raised text
 
 // Documentation-preview helpers. Leave false for printable exports.
 show_build_plate = false;
