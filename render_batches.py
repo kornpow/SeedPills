@@ -26,6 +26,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import zipfile
 from copy import deepcopy
 from pathlib import Path
@@ -223,8 +224,40 @@ def validate_and_patch_bambu_project(project, base_stl, bed_size):
     item = model.find(f".//{{{CORE_NS}}}build/{{{CORE_NS}}}item")
     if item is None or not item.get("transform"):
         raise ValueError("Bambu project has no positioned build item")
-    transform = [float(value) for value in item.get("transform").split()]
-    center_x, center_y = transform[9], -transform[10]
+    original_transform = item.get("transform")
+    transform = [float(value) for value in original_transform.split()]
+    object_model = ET.fromstring(members["3D/Objects/object_1.model"])
+    object_z_bounds = {}
+    for obj in object_model.findall(f".//{{{CORE_NS}}}object"):
+        z_values = [float(vertex.get("z")) for vertex in obj.findall(
+            f".//{{{CORE_NS}}}vertex")]
+        if z_values:
+            object_z_bounds[obj.get("id")] = (min(z_values), max(z_values))
+    component_min_z = []
+    for component in model.findall(f".//{{{CORE_NS}}}component"):
+        component_transform = [float(value) for value in
+                               component.get("transform").split()]
+        mesh_min_z = object_z_bounds[component.get("objectid")][0]
+        component_min_z.append(mesh_min_z + component_transform[11])
+    if not component_min_z:
+        raise ValueError("Bambu project has no mesh components")
+    # Bambu's headless assembler emits a negative Y build translation even
+    # though 3MF uses ordinary positive bed coordinates. Normalize it before
+    # validating; otherwise the model opens completely below the plate.
+    transform[10] = abs(transform[10])
+    transform[11] = -min(component_min_z)
+    updated_transform = " ".join(f"{value:.9g}" for value in transform)
+    model_bytes = members[model_name]
+    old_attribute = f'transform="{original_transform}"'.encode()
+    new_attribute = f'transform="{updated_transform}"'.encode()
+    if model_bytes.count(old_attribute) != 1:
+        raise ValueError("could not uniquely locate Bambu build transform")
+    members[model_name] = model_bytes.replace(old_attribute, new_attribute)
+    final_min_z = min(component_min_z) + transform[11]
+    if abs(final_min_z) > 1e-6:
+        raise ValueError(f"model minimum Z is {final_min_z}, expected 0")
+
+    center_x, center_y = transform[9], transform[10]
     extent_x, extent_y = read_ascii_stl_xy_extents(base_stl)
     model_bounds = (center_x - extent_x / 2, center_y - extent_y / 2,
                     center_x + extent_x / 2, center_y + extent_y / 2)
@@ -250,7 +283,7 @@ def validate_and_patch_bambu_project(project, base_stl, bed_size):
         for name, data in members.items():
             output.writestr(name, data)
     validated.replace(project)
-    return model_bounds, tower_bounds
+    return model_bounds, tower_bounds, transform[11]
 
 
 def main():
@@ -390,14 +423,27 @@ def main():
             sys.exit("Bambu project export failed:\n"
                      + export.stdout + export.stderr)
 
-        model_bounds, tower_bounds = validate_and_patch_bambu_project(
+        model_bounds, tower_bounds, z_offset = validate_and_patch_bambu_project(
             project, base, (bed_w, bed_h))
         print(f"validated P{args.open_bambu}/{total_batches}: "
               f"base=filament 1 black, text=filament 2 orange")
         print(f"model bounds: {tuple(round(v, 2) for v in model_bounds)}")
         print(f"tower bounds: {tower_bounds}")
+        print(f"build Z offset: {z_offset:.2f} mm (minimum Z = 0)")
+        # Bambu's CLI exporter leaves a GUI process behind. Close it so the
+        # validated project cannot be hidden behind a stale import window.
+        subprocess.run([
+            "osascript", "-e", 'tell application "BambuStudio" to quit',
+        ], capture_output=True)
+        for _ in range(40):
+            if subprocess.run(["pgrep", "-f", bambu],
+                              capture_output=True).returncode != 0:
+                break
+            time.sleep(0.25)
+        else:
+            sys.exit("error: stale Bambu Studio process did not quit")
         subprocess.Popen(
-            ["open", "-a", "BambuStudio", str(project)],
+            ["open", "-na", "BambuStudio", str(project)],
             cwd=args.out,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,

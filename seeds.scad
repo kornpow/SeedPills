@@ -97,7 +97,7 @@ module pill_outline(inset = 0) {
 }
 
 module pill_shape() {
-    linear_extrude(height, center = true)
+    linear_extrude(height)
         pill_outline();
 }
 
@@ -115,11 +115,11 @@ module plate_id() {
     label = str("P", plate_number, "/", plate_count);
     if (render_part == "both" || render_part == "base")
         color(base_color)
-            linear_extrude(height, center = true)
+            linear_extrude(height)
                 plate_id_outline();
     if (render_part == "both" || render_part == "text")
         color(text_color)
-            translate([0, 0, height / 2 - 0.01])
+            translate([0, 0, height - 0.01])
                 linear_extrude(text_height + 0.01)
                     resize([15, 5.2])
                         offset(r = text_weight)
@@ -156,7 +156,8 @@ module pill(front_word, back_word, x, y) {
             for (side = sides)
                 color(text_color)
                     rotate([0, 180 * side, 0])
-                        translate([0, 0, height / 2 - 0.01])
+                        translate([0, 0,
+                                   side == 0 ? height - 0.01 : 0.01])
                             linear_extrude(text_height + 0.01)
                                 fitted_text(face_word[side]);
 
@@ -164,12 +165,12 @@ module pill(front_word, back_word, x, y) {
         // previous pill. Standalone pills avoid the rough snapped edges.
         if ((render_part == "both" || render_part == "base")
             && connected && x > 0)
-            translate([-(width + spacing) / 2, 0, 0])
+            translate([-(width + spacing) / 2, 0, height / 2])
                 cube([spacing + 2 * interlock_overlap, interlock, interlock],
                      center = true);
         if ((render_part == "both" || render_part == "base")
             && connected && y > 0)
-            translate([0, (lenght + spacing) / 2, 0])
+            translate([0, (lenght + spacing) / 2, height / 2])
                 cube([interlock, spacing + 2 * interlock_overlap, interlock],
                      center = true);
     }
@@ -198,7 +199,7 @@ if (show_plate_id)
 // Optional non-printing-scene helpers used to render README images.
 if (show_build_plate)
     color([0.18, 0.21, 0.24])
-        translate([0, 0, -height / 2 - 0.11])
+        translate([0, 0, -0.11])
             cube([bed[0], bed[1], 0.2], center = true);
 
 if (show_prime_tower)
