@@ -15,7 +15,7 @@
     "3000",
     "nil"
   ],
-  "description": "SeedPills 0.2.0-beta.4 two-color preset for a Bambu Lab P1S with a 0.4 mm nozzle. Uses slower speeds and accelerations throughout, solid thin bases, Arachne walls for PT Mono lettering, clean standalone edges, and a fixed 20 mm prime tower.",
+  "description": "SeedPills 0.2.0-beta.5 two-color preset for a Bambu Lab P1S with a 0.4 mm nozzle. Uses slower speeds and accelerations throughout, solid thin bases, Arachne walls for PT Mono lettering, clean standalone edges, and a fixed 20 mm prime tower.",
   "elefant_foot_compensation": "0.15",
   "enable_prime_tower": "1",
   "enable_support": "0",
@@ -55,7 +55,7 @@
   "ironing_type": "no ironing",
   "layer_height": "0.2",
   "line_width": "0.45",
-  "name": "SeedPills 0.2.0-beta.4 — 0.20mm @BBL P1S",
+  "name": "SeedPills 0.2.0-beta.5 — 0.20mm @BBL P1S",
   "only_one_wall_top": "0",
   "outer_wall_line_width": "0.45",
   "outer_wall_acceleration": [
@@ -82,7 +82,7 @@
   "prime_tower_max_speed": "50",
   "prime_tower_width": "20",
   "print_sequence": "by layer",
-  "print_settings_id": "SeedPills 0.2.0-beta.4 — 0.20mm @BBL P1S",
+  "print_settings_id": "SeedPills 0.2.0-beta.5 — 0.20mm @BBL P1S",
   "seam_position": "aligned",
   "small_perimeter_speed": [
     "30",

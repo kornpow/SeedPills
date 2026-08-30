@@ -1,6 +1,6 @@
 # SeedPills
 
-**Current version: `0.2.0-beta.4`**
+**Current version: `0.2.0-beta.5`**
 
 Create a printable set of 2,048 BIP39 word tiles for seed-phrase games,
 demonstrations, and offline random selection.
@@ -135,9 +135,10 @@ python3 render_batches.py --open-bambu 5
 
 That example opens `P5/7`, the next plate after `P6/7` and `P7/7`. The files
 remain outside the repository and can be discarded after slicing. The launch
-also assembles both STLs as one aligned multicolor object and assigns filament
-1 (black) to the base and filament 2 (orange) to the raised text. Bambu Studio
-then arranges the assembled object around the printer's exclusion zones.
+builds a temporary Bambu-native 3MF from the vendor-neutral STLs, then verifies
+that it uses the 256 × 256 mm P1S bed, clears the exclusion zone, keeps the
+prime tower separate, and assigns filament 1 (black) to the base and filament 2
+(orange) to the raised text. Only that validated temporary project is opened.
 
 ## Two-color slicer workflow
 
@@ -205,7 +206,7 @@ pills and leave rough edges.
 An importable P1S/0.4 mm process preset is included at
 [`presets/SeedPills 0.20mm @BBL P1S.json`](presets/SeedPills%200.20mm%20@BBL%20P1S.json).
 In Bambu Studio, use **File → Import → Import Configs**, select the JSON file,
-then choose **SeedPills 0.2.0-beta.4 — 0.20mm @BBL P1S** as the process preset.
+then choose **SeedPills 0.2.0-beta.5 — 0.20mm @BBL P1S** as the process preset.
 The version in that visible profile name should match the version shown at the
 top of this README and in [`VERSION`](VERSION).
 

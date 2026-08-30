@@ -168,6 +168,91 @@ def assemble_3mf(base_path, text_path, output_path, title):
         package.writestr("3D/3dmodel.model", model_xml)
 
 
+def read_ascii_stl_xy_extents(path):
+    """Return X/Y extents from an ASCII STL emitted by OpenSCAD."""
+    xs, ys = [], []
+    with path.open() as stl:
+        for line in stl:
+            fields = line.split()
+            if len(fields) == 4 and fields[0] == "vertex":
+                xs.append(float(fields[1]))
+                ys.append(float(fields[2]))
+    if not xs:
+        raise ValueError(f"{path} contains no ASCII STL vertices")
+    return max(xs) - min(xs), max(ys) - min(ys)
+
+
+def validate_and_patch_bambu_project(project, base_stl, bed_size):
+    """Make Bambu's temporary project deterministic, then validate it."""
+    with zipfile.ZipFile(project) as source:
+        members = {info.filename: source.read(info.filename)
+                   for info in source.infolist()}
+
+    settings_name = "Metadata/project_settings.config"
+    model_settings_name = "Metadata/model_settings.config"
+    model_name = "3D/3dmodel.model"
+    settings = json.loads(members[settings_name])
+    settings.update({
+        "printable_area": [
+            "0x0", f"{bed_size[0]}x0", f"{bed_size[0]}x{bed_size[1]}",
+            f"0x{bed_size[1]}",
+        ],
+        "bed_exclude_area": ["0x0", "18x0", "18x28", "0x28"],
+        "curr_bed_type": "Textured PEI Plate",
+        "filament_colour": ["#000000", "#F97316"],
+        "default_filament_colour": ["#000000", "#F97316"],
+        "filament_settings_id": [
+            "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+            "Bambu PLA Basic @BBL P1S 0.4 nozzle",
+        ],
+        "enable_prime_tower": "1",
+        "prime_tower_width": "20",
+        "wipe_tower_x": ["210"],
+        "wipe_tower_y": ["4"],
+        "wipe_tower_no_sparse_layers": "0",
+    })
+    members[settings_name] = (json.dumps(settings, indent=4) + "\n").encode()
+
+    model_settings = ET.fromstring(members[model_settings_name])
+    extruders = [node.get("value") for node in model_settings.findall(
+        ".//metadata[@key='extruder']")]
+    if extruders != ["1", "2"]:
+        raise ValueError(f"Bambu part assignment is {extruders}, expected 1,2")
+
+    model = ET.fromstring(members[model_name])
+    item = model.find(f".//{{{CORE_NS}}}build/{{{CORE_NS}}}item")
+    if item is None or not item.get("transform"):
+        raise ValueError("Bambu project has no positioned build item")
+    transform = [float(value) for value in item.get("transform").split()]
+    center_x, center_y = transform[9], -transform[10]
+    extent_x, extent_y = read_ascii_stl_xy_extents(base_stl)
+    model_bounds = (center_x - extent_x / 2, center_y - extent_y / 2,
+                    center_x + extent_x / 2, center_y + extent_y / 2)
+    tower_bounds = (210, 4, 230, 24)
+    exclusion_bounds = (0, 0, 18, 28)
+
+    def intersects(a, b):
+        return a[0] < b[2] and a[2] > b[0] \
+            and a[1] < b[3] and a[3] > b[1]
+
+    tolerance = 0.01  # Bambu transforms commonly contain ~1e-5 mm roundoff.
+    if (model_bounds[0] < -tolerance or model_bounds[1] < -tolerance
+            or model_bounds[2] > bed_size[0] + tolerance
+            or model_bounds[3] > bed_size[1] + tolerance):
+        raise ValueError(f"model is outside the bed: {model_bounds}")
+    if intersects(model_bounds, exclusion_bounds):
+        raise ValueError(f"model intersects exclusion zone: {model_bounds}")
+    if intersects(model_bounds, tower_bounds):
+        raise ValueError(f"model intersects prime tower: {model_bounds}")
+
+    validated = project.with_name(project.stem + "-validated.3mf")
+    with zipfile.ZipFile(validated, "w", zipfile.ZIP_DEFLATED) as output:
+        for name, data in members.items():
+            output.writestr(name, data)
+    validated.replace(project)
+    return model_bounds, tower_bounds
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -275,50 +360,50 @@ def main():
     if args.open_bambu is not None:
         preset = Path(__file__).with_name("presets") \
             / "SeedPills 0.20mm @BBL P1S.json"
+        machine = Path(
+            "/Applications/BambuStudio.app/Contents/Resources/profiles/BBL/"
+            "machine/Bambu Lab P1S 0.4 nozzle.json"
+        )
         filament = Path(
             "/Applications/BambuStudio.app/Contents/Resources/profiles/BBL/"
             "filament/Bambu PLA Basic @BBL P1S 0.4 nozzle.json"
         )
-        if not filament.exists():
-            sys.exit(f"error: Bambu PLA profile not found: {filament}")
-        filament_template = json.loads(filament.read_text())
-        colored_filaments = []
-        for slot, color_name, color_value in (
-                (1, "Black", "#000000"),
-                (2, "Orange", "#F97316")):
-            colored = dict(filament_template)
-            colored["name"] = f"SeedPills {color_name} PLA"
-            colored["from"] = "User"
-            colored["setting_id"] = f"SeedPills_PLA_{color_name}"
-            colored["default_filament_colour"] = [color_value]
-            colored["filament_colour"] = [color_value]
-            colored["filament_settings_id"] = [colored["name"]]
-            colored_path = args.out / f"filament-{slot}-{color_name.lower()}.json"
-            colored_path.write_text(json.dumps(colored, indent=2) + "\n")
-            colored_filaments.append(colored_path.resolve())
+        for required in (machine, filament):
+            if not required.exists():
+                sys.exit(f"error: Bambu profile not found: {required}")
         stem = rendered_stems[args.open_bambu]
         base = (args.out / f"{stem}_base.stl").resolve()
         text = (args.out / f"{stem}_text.stl").resolve()
-        print(f"opening P{args.open_bambu}/{total_batches} from {args.out}")
-        print("filament 1: black base; filament 2: orange text")
-        launch_log = (args.out / "bambu-launch.log").open("w")
+        project = args.out / f"{stem}-Bambu.3mf"
+        bambu = "/Applications/BambuStudio.app/Contents/MacOS/BambuStudio"
+        export = subprocess.run([
+            bambu,
+            "--load-settings", f"{preset.resolve()};{machine}",
+            "--load-filaments", f"{filament};{filament}",
+            "--load-filament-ids", "1,2",
+            "--allow-multicolor-oneplate",
+            "--assemble", "--arrange", "1",
+            "--export-3mf", str(project),
+            str(base), str(text),
+        ], cwd=args.out, capture_output=True, text=True)
+        if export.returncode != 0 or not project.exists():
+            sys.exit("Bambu project export failed:\n"
+                     + export.stdout + export.stderr)
+
+        model_bounds, tower_bounds = validate_and_patch_bambu_project(
+            project, base, (bed_w, bed_h))
+        print(f"validated P{args.open_bambu}/{total_batches}: "
+              f"base=filament 1 black, text=filament 2 orange")
+        print(f"model bounds: {tuple(round(v, 2) for v in model_bounds)}")
+        print(f"tower bounds: {tower_bounds}")
         subprocess.Popen(
-            [
-                "/Applications/BambuStudio.app/Contents/MacOS/BambuStudio",
-                "--load-settings", str(preset.resolve()),
-                "--load-filaments", ";".join(map(str, colored_filaments)),
-                "--load-filament-ids", "1,2",
-                "--allow-multicolor-oneplate",
-                "--assemble", "--arrange", "1",
-                str(base), str(text),
-            ],
+            ["open", "-a", "BambuStudio", str(project)],
             cwd=args.out,
             stdin=subprocess.DEVNULL,
-            stdout=launch_log,
-            stderr=subprocess.STDOUT,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             start_new_session=True,
         )
-        launch_log.close()
 
 
 if __name__ == "__main__":
