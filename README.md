@@ -152,6 +152,13 @@ The ready-to-slice result should show black pill bases, orange lettering, the
 
 ![Bambu Studio showing the validated wide P1/8 plate and two-color prime tower](pictures/bambu-p1-8-ready.jpg)
 
+After **Slice plate**, check **Preview** before sending the job. The sliced
+plate should still show orange text over black bases, the `P1/8` marker, and a
+two-color prime tower. Seeing all four confirms that the multipart assignments
+survived slicing and that the tower fits in the reserved lower band:
+
+![Sliced P1/8 preview with black bases, orange text, plate marker, and prime tower](pictures/bambu-p1-8-sliced.jpg)
+
 ## Two-color slicer workflow
 
 For each plate, select the matching `_base.stl` and `_text.stl` files and
