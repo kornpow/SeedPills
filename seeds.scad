@@ -8,8 +8,8 @@
 //   - standalone pills have a 0.40mm separation (one nozzle width)
 //
 // Single-sided by default: one word per pill, printed flat with no flip.
-// A full 2048-word set is 2048 pills (7 plates at 11x27 on a 256mm bed,
-// leaving room for the P1S exclusion corner).
+// A full 2048-word set is 2048 pills (8 plates at 13x22 on a 256mm bed,
+// leaving a lower band for the plate ID and prime tower).
 
 $fa = 6;    // smooth pill ends
 $fs = 0.8;  // curve resolution; smooth at this radius. The mesh is large but
@@ -17,8 +17,8 @@ $fs = 0.8;  // curve resolution; smooth at this radius. The mesh is large but
 
 // Grid
 first = 0;         // index of the first word in this grid (0 = "ABAN")
-columns = 0;       // pills per row; 0 = auto from bed
-rows = 0;          // pills per column; 0 = auto from bed
+columns = 13;      // pills per row; 0 = auto from bed
+rows = 22;         // pills per column; 0 = auto from bed
 bed = [256, 256];    // build plate size (P1S/X1C = 256x256), used when
                      // columns/rows are 0
 bed_margin = 4;        // keep-out per side, room for skirt/brim
@@ -28,7 +28,7 @@ prime_tower = [20, 20]; // requested tower footprint; its width is reserved as
                         // a clear strip along the right edge of the plate
 show_plate_id = true;   // add a standalone P1/7-style plate marker
 plate_number = 1;       // set automatically by render_batches.py
-plate_count = 7;
+plate_count = 8;
 plate_id_size = [18, 10];
 
 // Pill
@@ -109,8 +109,7 @@ module plate_id_outline() {
 }
 
 // A separate two-color tile identifies the source plate after printing. It
-// also extends the imported object's bounding box just enough that slicers
-// which auto-center STL pairs leave the prime-tower lane open on the right.
+// It sits directly below the last grid pill, clear of the lower tower band.
 module plate_id() {
     label = str("P", plate_number, "/", plate_count);
     if (render_part == "both" || render_part == "base")
@@ -190,9 +189,9 @@ for (i = [0:cols * rws - 1]) {
 }
 
 if (show_plate_id)
-    translate([origin[0] + (cols - 1) * (width + spacing)
-                   + width / 2 + spacing + plate_id_size[0] / 2,
-               origin[1] - (rws - 1) * (lenght + spacing),
+    translate([origin[0] + (cols - 1) * (width + spacing),
+               origin[1] - (rws - 1) * (lenght + spacing)
+                   - lenght / 2 - spacing - plate_id_size[1] / 2,
                0])
         plate_id();
 

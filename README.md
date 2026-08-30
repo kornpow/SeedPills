@@ -1,6 +1,6 @@
 # SeedPills
 
-**Current version: `0.2.0-beta.8`**
+**Current version: `0.2.0-beta.9`**
 
 Create a printable set of 2,048 BIP39 word tiles for seed-phrase games,
 demonstrations, and offline random selection.
@@ -74,7 +74,7 @@ from what is printed.
   outlines for large type that stays clear of the rounded pill edges
 - 0.4 mm gaps between pills—close together without shared geometry
 - Dedicated 20 mm strip for an approximately 20 × 20 mm prime tower
-- Automatic two-color `P1/7` through `P7/7` plate-identification tiles
+- Automatic two-color `P1/8` through `P8/8` plate-identification tiles
 - Automatic P1S/X1C bed layout with configurable dimensions
 
 ## Quick start
@@ -111,7 +111,8 @@ To inspect or export directly:
 
 1. Open `seeds.scad` in OpenSCAD.
 2. Set `first` to the zero-based index of the first word (`0` starts with
-   `ABAN`). Leave `columns = 0` and `rows = 0` to fill the configured bed.
+   `ABAN`). The production defaults are `columns = 13` and `rows = 22`.
+   Set either value to `0` to auto-fit that dimension from the bed.
 3. Set `render_part` to `"base"` and export an STL.
 4. Set `render_part` to `"text"` and export a second STL with the same grid
    settings.
@@ -122,18 +123,18 @@ For the complete word list, use the batch renderer:
 python3 render_batches.py
 ```
 
-This produces seven matching base/text pairs in `stl_files/`. Generated STL
+This produces eight matching base/text pairs in `stl_files/`. Generated STL
 and 3MF files are ignored by Git and are never intended to be committed.
 
-On macOS, the preferred print-preparation command regenerates **all seven
+On macOS, the preferred print-preparation command regenerates **all eight
 plates** in a fresh temporary folder and opens the requested plate in Bambu
 Studio together with the version-matched repo preset:
 
 ```sh
-python3 render_batches.py --open-bambu 5
+python3 render_batches.py --open-bambu 1
 ```
 
-That example opens `P5/7`, the next plate after `P6/7` and `P7/7`. The files
+That example opens `P1/8`. The files
 remain outside the repository and can be discarded after slicing. The launch
 builds a temporary Bambu-native 3MF from the vendor-neutral STLs, then verifies
 that it uses the 256 × 256 mm P1S bed, clears the exclusion zone, keeps the
@@ -154,8 +155,8 @@ slicers that support multipart models.
 Example pair:
 
 ```text
-SeedPills_single_11x27_0001_0297_base.stl
-SeedPills_single_11x27_0001_0297_text.stl
+SeedPills_single_13x22_0001_0286_base.stl
+SeedPills_single_13x22_0001_0286_text.stl
 ```
 
 ## Default plate layout
@@ -166,23 +167,22 @@ The defaults target a 256 × 256 mm Bambu P1S/X1C build plate:
 
 | Setting | Default | Purpose |
 |---|---:|---|
-| Grid | 11 × 27 | 297 pills on each full plate |
+| Grid | 13 × 22 | 286 pills on each full plate |
 | Pill size | 18.5 × 7.5 mm | Compact, easy-to-handle tile |
 | Pill gap | 0.4 mm | One nozzle width, with no shared geometry |
 | Bed margin | 4 mm | Clearance for skirt or brim |
 | Front-left exclusion | 18 × 28 mm | Cutter/wiper clearance |
 | Prime-tower reserve | 20 mm wide | Clear strip at the right edge |
 
-The complete 2,048-word single-sided set occupies seven plates. Unused slots
+The complete 2,048-word single-sided set occupies eight plates. Unused slots
 on the last plate are left blank.
 
 The `prime_tower` setting is `[20, 20]`. The current rectangular grid reserves
 its 20 mm width as a full-height strip, which is conservative and lets the
 slicer place the tower along that edge. A small standalone plate-ID tile sits
-directly to the right of the grid's bottom-right pill with the same 0.4 mm
-clearance as the pills. Besides keeping the ID close to the grid, that placement
-makes Bambu Studio's normal import-centering leave the right-side tower lane
-open. The batch renderer numbers the tile automatically (`P1/7`, `P2/7`, and
+directly below the grid's bottom-right pill with the same 0.4 mm clearance as
+the pills. The wide, short grid leaves a lower band for that tile and the prime
+tower. The batch renderer numbers the tile automatically (`P1/8`, `P2/8`, and
 so on), making it easy to keep pills associated with their source plate.
 
 ## Print settings
@@ -206,7 +206,7 @@ pills and leave rough edges.
 An importable P1S/0.4 mm process preset is included at
 [`presets/SeedPills 0.20mm @BBL P1S.json`](presets/SeedPills%200.20mm%20@BBL%20P1S.json).
 In Bambu Studio, use **File → Import → Import Configs**, select the JSON file,
-then choose **SeedPills 0.2.0-beta.8 — 0.20mm @BBL P1S** as the process preset.
+then choose **SeedPills 0.2.0-beta.9 — 0.20mm @BBL P1S** as the process preset.
 The version in that visible profile name should match the version shown at the
 top of this README and in [`VERSION`](VERSION).
 
@@ -268,8 +268,8 @@ closely spaced pills and recreate the rough edges this design avoids.
 
 ```sh
 python3 render_batches.py                     # all plates, paired STLs
-python3 render_batches.py --first 297 --count 1
-python3 render_batches.py --open-bambu 5          # regenerate all; open P5/7
+python3 render_batches.py --first 286 --count 1
+python3 render_batches.py --open-bambu 1          # regenerate all; open P1/8
 python3 render_batches.py --columns 8 --rows 16
 python3 render_batches.py --bed 256,256
 python3 render_batches.py --double-sided

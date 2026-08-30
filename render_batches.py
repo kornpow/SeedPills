@@ -8,7 +8,7 @@ bed and exports paired STL files.
 
 Usage:
     python3 render_batches.py                    # all plates, STL, auto grid
-    python3 render_batches.py --open-bambu 5     # regenerate all, open P5/7
+    python3 render_batches.py --open-bambu 6     # regenerate all, open P6/8
     python3 render_batches.py --double-sided     # 1024 pills instead of 2048
     python3 render_batches.py --format 3mf       # 3MF instead of STL
     python3 render_batches.py --first 324 --count 1
@@ -227,28 +227,37 @@ def validate_and_patch_bambu_project(project, base_stl, bed_size):
     original_transform = item.get("transform")
     transform = [float(value) for value in original_transform.split()]
     object_model = ET.fromstring(members["3D/Objects/object_1.model"])
-    object_z_bounds = {}
+    object_vertices = {}
     for obj in object_model.findall(f".//{{{CORE_NS}}}object"):
-        z_values = [float(vertex.get("z")) for vertex in obj.findall(
-            f".//{{{CORE_NS}}}vertex")]
-        if z_values:
-            object_z_bounds[obj.get("id")] = (min(z_values), max(z_values))
-    component_min_z = []
+        vertices = [tuple(float(vertex.get(axis)) for axis in ("x", "y", "z"))
+                    for vertex in obj.findall(f".//{{{CORE_NS}}}vertex")]
+        if vertices:
+            object_vertices[obj.get("id")] = vertices
+    local_points = []
+
+    def apply_transform(point, values):
+        x, y, z = point
+        return (x * values[0] + y * values[3] + z * values[6] + values[9],
+                x * values[1] + y * values[4] + z * values[7] + values[10],
+                x * values[2] + y * values[5] + z * values[8] + values[11])
+
     for component in model.findall(f".//{{{CORE_NS}}}component"):
         component_transform = [float(value) for value in
                                component.get("transform").split()]
-        mesh_min_z = object_z_bounds[component.get("objectid")][0]
-        component_min_z.append(mesh_min_z + component_transform[11])
-    if not component_min_z:
+        local_points.extend(apply_transform(point, component_transform)
+                            for point in object_vertices[component.get("objectid")])
+    if not local_points:
         raise ValueError("Bambu project has no mesh components")
-    extent_x, extent_y = read_ascii_stl_xy_extents(base_stl)
+    local_bounds = tuple((min(point[axis] for point in local_points),
+                          max(point[axis] for point in local_points))
+                         for axis in range(3))
     bed_margin = 4.0
     # Do not trust Bambu's headless arrangement: it emits a negative Y and
     # places X exactly on the bed edge. Position the object explicitly with a
     # real printable margin while retaining the lower tower lane.
-    transform[9] = bed_margin + extent_x / 2
-    transform[10] = bed_size[1] - bed_margin - extent_y / 2
-    transform[11] = -min(component_min_z)
+    transform[9] = bed_margin - local_bounds[0][0]
+    transform[10] = bed_size[1] - bed_margin - local_bounds[1][1]
+    transform[11] = -local_bounds[2][0]
     updated_transform = " ".join(f"{value:.9g}" for value in transform)
     model_bytes = members[model_name]
     old_attribute = f'transform="{original_transform}"'.encode()
@@ -256,13 +265,14 @@ def validate_and_patch_bambu_project(project, base_stl, bed_size):
     if model_bytes.count(old_attribute) != 1:
         raise ValueError("could not uniquely locate Bambu build transform")
     members[model_name] = model_bytes.replace(old_attribute, new_attribute)
-    final_min_z = min(component_min_z) + transform[11]
+    final_min_z = local_bounds[2][0] + transform[11]
     if abs(final_min_z) > 1e-6:
         raise ValueError(f"model minimum Z is {final_min_z}, expected 0")
 
-    center_x, center_y = transform[9], transform[10]
-    model_bounds = (center_x - extent_x / 2, center_y - extent_y / 2,
-                    center_x + extent_x / 2, center_y + extent_y / 2)
+    model_bounds = (local_bounds[0][0] + transform[9],
+                    local_bounds[1][0] + transform[10],
+                    local_bounds[0][1] + transform[9],
+                    local_bounds[1][1] + transform[10])
     tower_bounds = (210, 4, 230, 24)
     exclusion_bounds = (0, 0, 18, 28)
 
@@ -296,10 +306,10 @@ def main():
                    help="first word index, 0-based (default: 0)")
     p.add_argument("--count", type=int, default=0,
                    help="number of batches to render (default: all remaining)")
-    p.add_argument("--columns", type=int, default=0,
-                   help="pills per row (default: 0 = fill the bed)")
-    p.add_argument("--rows", type=int, default=0,
-                   help="pills per column (default: 0 = fill the bed)")
+    p.add_argument("--columns", type=int, default=13,
+                   help="pills per row (default: 13; 0 = auto-fit)")
+    p.add_argument("--rows", type=int, default=22,
+                   help="pills per column (default: 22; 0 = auto-fit)")
     p.add_argument("--bed", default="256,256",
                    help="bed size in mm as W,H (default: 256,256 for P1S/X1C)")
     p.add_argument("--double-sided", action="store_true",
