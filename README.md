@@ -159,6 +159,12 @@ survived slicing and that the tower fits in the reserved lower band:
 
 ![Sliced P1/8 preview with black bases, orange text, plate marker, and prime tower](pictures/bambu-p1-8-sliced.jpg)
 
+The close-up below shows the expected sliced toolpaths for the plate marker and
+prime tower. The orange center confirms that both filaments are represented in
+the tower rather than merely colored in the Prepare view:
+
+![Close-up of the sliced P1/8 marker and two-color prime tower toolpaths](pictures/bambu-marker-prime-tower-detail.jpg)
+
 ## Two-color slicer workflow
 
 For each plate, select the matching `_base.stl` and `_text.stl` files and
