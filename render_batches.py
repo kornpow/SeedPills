@@ -241,10 +241,13 @@ def validate_and_patch_bambu_project(project, base_stl, bed_size):
         component_min_z.append(mesh_min_z + component_transform[11])
     if not component_min_z:
         raise ValueError("Bambu project has no mesh components")
-    # Bambu's headless assembler emits a negative Y build translation even
-    # though 3MF uses ordinary positive bed coordinates. Normalize it before
-    # validating; otherwise the model opens completely below the plate.
-    transform[10] = abs(transform[10])
+    extent_x, extent_y = read_ascii_stl_xy_extents(base_stl)
+    bed_margin = 4.0
+    # Do not trust Bambu's headless arrangement: it emits a negative Y and
+    # places X exactly on the bed edge. Position the object explicitly with a
+    # real printable margin while retaining the lower tower lane.
+    transform[9] = bed_margin + extent_x / 2
+    transform[10] = bed_size[1] - bed_margin - extent_y / 2
     transform[11] = -min(component_min_z)
     updated_transform = " ".join(f"{value:.9g}" for value in transform)
     model_bytes = members[model_name]
@@ -258,7 +261,6 @@ def validate_and_patch_bambu_project(project, base_stl, bed_size):
         raise ValueError(f"model minimum Z is {final_min_z}, expected 0")
 
     center_x, center_y = transform[9], transform[10]
-    extent_x, extent_y = read_ascii_stl_xy_extents(base_stl)
     model_bounds = (center_x - extent_x / 2, center_y - extent_y / 2,
                     center_x + extent_x / 2, center_y + extent_y / 2)
     tower_bounds = (210, 4, 230, 24)
@@ -269,9 +271,10 @@ def validate_and_patch_bambu_project(project, base_stl, bed_size):
             and a[1] < b[3] and a[3] > b[1]
 
     tolerance = 0.01  # Bambu transforms commonly contain ~1e-5 mm roundoff.
-    if (model_bounds[0] < -tolerance or model_bounds[1] < -tolerance
-            or model_bounds[2] > bed_size[0] + tolerance
-            or model_bounds[3] > bed_size[1] + tolerance):
+    if (model_bounds[0] < bed_margin - tolerance
+            or model_bounds[1] < bed_margin - tolerance
+            or model_bounds[2] > bed_size[0] - bed_margin + tolerance
+            or model_bounds[3] > bed_size[1] - bed_margin + tolerance):
         raise ValueError(f"model is outside the bed: {model_bounds}")
     if intersects(model_bounds, exclusion_bounds):
         raise ValueError(f"model intersects exclusion zone: {model_bounds}")
