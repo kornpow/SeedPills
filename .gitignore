@@ -5,3 +5,7 @@
 *.3mf
 *.stl
 /stl_files/
+
+# Python runtime cache
+__pycache__/
+*.py[cod]

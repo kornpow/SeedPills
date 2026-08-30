@@ -108,7 +108,9 @@ module plate_id_outline() {
                 circle(r = plate_id_size[1] / 2);
 }
 
-// A separate two-color tile identifies the source plate after printing.
+// A separate two-color tile identifies the source plate after printing. It
+// also extends the imported object's bounding box just enough that slicers
+// which auto-center STL pairs leave the prime-tower lane open on the right.
 module plate_id() {
     label = str("P", plate_number, "/", plate_count);
     if (render_part == "both" || render_part == "base")
@@ -187,9 +189,9 @@ for (i = [0:cols * rws - 1]) {
 }
 
 if (show_plate_id)
-    translate([origin[0] + (cols - 1) * (width + spacing),
-               origin[1] - (rws - 1) * (lenght + spacing)
-                   - lenght / 2 - spacing - plate_id_size[1] / 2,
+    translate([origin[0] + (cols - 1) * (width + spacing)
+                   + width / 2 + spacing + plate_id_size[0] / 2,
+               origin[1] - (rws - 1) * (lenght + spacing),
                0])
         plate_id();
 

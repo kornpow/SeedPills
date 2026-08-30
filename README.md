@@ -162,9 +162,11 @@ on the last plate are left blank.
 The `prime_tower` setting is `[20, 20]`. The current rectangular grid reserves
 its 20 mm width as a full-height strip, which is conservative and lets the
 slicer place the tower along that edge. A small standalone plate-ID tile sits
-directly below the grid's bottom-right pill with the same 0.4 mm clearance as
-the pills. The batch renderer numbers that tile automatically (`P1/7`, `P2/7`,
-and so on), making it easy to keep pills associated with their source plate.
+directly to the right of the grid's bottom-right pill with the same 0.4 mm
+clearance as the pills. Besides keeping the ID close to the grid, that placement
+makes Bambu Studio's normal import-centering leave the right-side tower lane
+open. The batch renderer numbers the tile automatically (`P1/7`, `P2/7`, and
+so on), making it easy to keep pills associated with their source plate.
 
 ## Print settings
 
@@ -201,13 +203,47 @@ overrides the settings important to this model:
 - 0.15 mm elephant-foot compensation to preserve the 0.4 mm pill gaps
 - Supports, ironing, and brims disabled
 - A 20 mm prime tower with no added brim, matching the reserved right strip
+- Prime-tower position fixed at X=232, Y=232 (the top-right corner)
 - Sparse prime-tower layers enabled, avoiding Bambu's relative-position
   restriction on this nearly full-bed layout
 
-After importing the paired STLs, assign the base and text parts to their AMS
-filaments and move the prime tower into the clear strip. Always inspect the
-sliced preview before printing, especially the first-layer separation and
-prime-tower clearance.
+After importing the paired STLs together as one multipart object, leave the
+object at Bambu Studio's automatic centered position, assign the base and text
+parts to their AMS filaments, and select this preset. The plate ID biases the
+combined bounding box so the pill grid lands left of the preset's tower
+position. No manual model or tower movement should be needed. Always inspect
+the sliced preview before printing, especially after changing printer, bed, or
+tower dimensions.
+
+## Real print results and troubleshooting
+
+![Printed SeedPills showing raised lettering and textured build-plate backs](pictures/printed-pill-detail.jpg)
+
+The raised PT Mono lettering remains readable at the small tile size, and the
+textured plate finish transfers cleanly to the flat backs.
+
+### Localized adhesion failure
+
+![A localized print failure affecting several pills along one side of an otherwise successful plate](pictures/localized-adhesion-failure.jpg)
+
+The failure above is localized while the surrounding pills printed normally.
+That pattern most strongly suggests that one or more tiles lifted or detached,
+after which the nozzle caught them and dragged loose filament across nearby
+parts. It does not look like a plate-wide flow or temperature failure.
+
+Before reprinting a failed plate:
+
+1. Wash the build plate with warm water and plain dish soap, then avoid touching
+   the print area.
+2. For PLA on an enclosed P1S, disable or substantially reduce the auxiliary
+   fan; its side airflow can cool one region of a broad, thin print unevenly.
+3. Confirm the selected build-plate type and watch the first two layers for a
+   lifting edge before committing to the full plate.
+4. If failure repeats in exactly the same location, rotate or swap the build
+   plate to distinguish a surface problem from directional cooling.
+
+A brim is intentionally not enabled by default because it can join these
+closely spaced pills and recreate the rough edges this design avoids.
 
 ## Batch-rendering options
 
