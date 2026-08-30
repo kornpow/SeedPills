@@ -1,0 +1,10 @@
+[project]
+name = "seedpills"
+version = "0.2.0b9"
+description = "Generate printable two-color BIP39 word tiles"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.uv]
+package = false

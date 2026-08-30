@@ -7,5 +7,6 @@
 /stl_files/
 
 # Python runtime cache
+.venv/
 __pycache__/
 *.py[cod]

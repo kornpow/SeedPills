@@ -85,6 +85,18 @@ Requirements:
 - [uv](https://docs.astral.sh/uv/getting-started/installation/) for batch
   rendering and tests; `uv` supplies the Python runtime automatically
 
+Clone the repository and create its locked Python environment:
+
+```sh
+git clone https://github.com/kornpow/SeedPills.git
+cd SeedPills
+uv sync
+```
+
+Run `uv sync` again after pulling a change to `pyproject.toml` or `uv.lock`.
+The project currently has no third-party Python packages, but syncing pins a
+compatible Python version and gives every command below the same environment.
+
 ### Font palette
 
 PT Mono Bold is the current production font. This palette compares it with
