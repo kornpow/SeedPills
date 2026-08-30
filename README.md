@@ -141,6 +141,17 @@ that it uses the 256 × 256 mm P1S bed, clears the exclusion zone, keeps the
 prime tower separate, and assigns filament 1 (black) to the base and filament 2
 (orange) to the raised text. Only that validated temporary project is opened.
 
+Before slicing, set or confirm the physical AMS colors under **Device**: A1 is
+black and A2 is orange. Return to **Prepare** and use **Sync info** if the
+project filament colors do not match the device.
+
+![Bambu Studio AMS configured with black PLA in A1 and orange PLA in A2](pictures/bambu-ams-black-orange.jpg)
+
+The ready-to-slice result should show black pill bases, orange lettering, the
+`P1/8` marker, and a two-color prime tower in the open lower band:
+
+![Bambu Studio showing the validated wide P1/8 plate and two-color prime tower](pictures/bambu-p1-8-ready.jpg)
+
 ## Two-color slicer workflow
 
 For each plate, select the matching `_base.stl` and `_text.stl` files and
