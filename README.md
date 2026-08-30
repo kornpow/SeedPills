@@ -82,7 +82,8 @@ Requirements:
 - [OpenSCAD](https://openscad.org/)
 - [PT Mono](https://fonts.google.com/specimen/PT+Mono), installed with the
   Bold style
-- Python 3 only if you want to render batches automatically
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) for batch
+  rendering and tests; `uv` supplies the Python runtime automatically
 
 ### Font palette
 
@@ -118,7 +119,7 @@ To inspect or export directly:
 For the complete word list, use the batch renderer:
 
 ```sh
-python3 render_batches.py
+uv run render_batches.py
 ```
 
 This produces eight matching base/text pairs in `stl_files/`. Generated STL
@@ -129,7 +130,7 @@ plates** in a fresh temporary folder and opens the requested plate in Bambu
 Studio together with the version-matched repo preset:
 
 ```sh
-python3 render_batches.py --open-bambu 1
+uv run render_batches.py --open-bambu 1
 ```
 
 That example opens `P1/8`. The files
@@ -286,14 +287,14 @@ closely spaced pills and recreate the rough edges this design avoids.
 ## Batch-rendering options
 
 ```sh
-python3 render_batches.py                     # all plates, paired STLs
-python3 render_batches.py --first 286 --count 1
-python3 render_batches.py --open-bambu 1          # regenerate all; open P1/8
-python3 render_batches.py --columns 8 --rows 16
-python3 render_batches.py --bed 256,256
-python3 render_batches.py --double-sided
-python3 render_batches.py --format 3mf        # multipart standard 3MF files
-python3 render_batches.py --out another_folder
+uv run render_batches.py                     # all plates, paired STLs
+uv run render_batches.py --first 286 --count 1
+uv run render_batches.py --open-bambu 1      # regenerate all; open P1/8
+uv run render_batches.py --columns 8 --rows 16
+uv run render_batches.py --bed 256,256
+uv run render_batches.py --double-sided
+uv run render_batches.py --format 3mf        # multipart standard 3MF files
+uv run render_batches.py --out another_folder
 ```
 
 On macOS, the script finds the OpenSCAD application bundle automatically.
@@ -337,5 +338,5 @@ renders any batches, so layout dimensions are never duplicated in Python.
 To verify that every pill still matches the canonical BIP39 English wordlist:
 
 ```sh
-python3 test_words.py
+uv run python -m unittest -v
 ```
