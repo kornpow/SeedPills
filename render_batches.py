@@ -289,7 +289,9 @@ def main():
             colored = dict(filament_template)
             colored["name"] = f"SeedPills {color_name} PLA"
             colored["from"] = "User"
+            colored["setting_id"] = f"SeedPills_PLA_{color_name}"
             colored["default_filament_colour"] = [color_value]
+            colored["filament_colour"] = [color_value]
             colored["filament_settings_id"] = [colored["name"]]
             colored_path = args.out / f"filament-{slot}-{color_name.lower()}.json"
             colored_path.write_text(json.dumps(colored, indent=2) + "\n")
