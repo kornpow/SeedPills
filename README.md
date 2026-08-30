@@ -1,5 +1,7 @@
 # SeedPills
 
+**Current version: `0.2.0-beta.1`**
+
 Create a printable set of 2,048 BIP39 word tiles for seed-phrase games,
 demonstrations, and offline random selection.
 
@@ -189,7 +191,9 @@ pills and leave rough edges.
 An importable P1S/0.4 mm process preset is included at
 [`presets/SeedPills 0.20mm @BBL P1S.json`](presets/SeedPills%200.20mm%20@BBL%20P1S.json).
 In Bambu Studio, use **File → Import → Import Configs**, select the JSON file,
-then choose **SeedPills 0.20mm @BBL P1S** as the process preset.
+then choose **SeedPills 0.2.0-beta.1 — 0.20mm @BBL P1S** as the process preset.
+The version in that visible profile name should match the version shown at the
+top of this README and in [`VERSION`](VERSION).
 
 The preset inherits Bambu's P1S-compatible 0.20 mm standard profile and
 overrides the settings important to this model:
