@@ -212,6 +212,11 @@ The defaults target a 256 × 256 mm Bambu P1S/X1C build plate:
 The complete 2,048-word single-sided set occupies eight plates. Unused slots
 on the last plate are left blank.
 
+With the included slower P1S preset, a full plate currently slices at about
+**4 hours 33 minutes**. Budgeting that duration across all eight plates is
+about **36 hours 24 minutes** of printing. The partially filled final plate may
+finish sooner; slicer estimates also vary with printer, filament, and firmware.
+
 The `prime_tower` setting is `[20, 20]`. The wide, short grid leaves an open
 lower band for the tower and a small standalone plate-ID tile. The tile sits
 directly below the grid's bottom-right pill with the same 0.4 mm clearance as
